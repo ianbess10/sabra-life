@@ -24,6 +24,7 @@ You run the SQL yourself in the Supabase dashboard. The app does not apply migra
 4. Put them in `.env.local` using the names in `.env.example`, then restart the dev server.
 5. Use **כניסה** in the HUD to sign in or register. The HUD shows **שומר…** / **נשמר** while progress syncs.
 6. Run [`supabase/leaderboard.sql`](supabase/leaderboard.sql) in the same SQL Editor. That adds `username`, creates the `public_leaderboard` view (`id`, `username`, `xp`, `shekels`), and grants `SELECT` to `anon` and `authenticated`. The trophy button in the HUD opens the board.
+7. Run [`supabase/streak.sql`](supabase/streak.sql) to add `current_streak`, `longest_streak`, and `last_mission_date` on `profiles`. The first successful mission of a local calendar day lights the HUD flame and pays a ₪10 streak bonus.
 
 Without those keys the game stays fully playable offline. The HUD shows **רק במכשיר**. The leaderboard stays empty until the view exists.
 

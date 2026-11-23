@@ -112,6 +112,8 @@ export const UI = {
   },
   anonymous: { he: "עולה חדש", en: "New oleh" },
   you: { he: "אתה", en: "You" },
+  streak: { he: "רצף", en: "Streak" },
+  streakBonus: { he: "בונוס רצף", en: "Streak Bonus Applied" },
 } as const
 
 export function asHint(entry: { he: string; en: string }): HintLine {
@@ -131,4 +133,5 @@ export const HUD_HINTS: HintLine[] = [
   asHint(UI.saving),
   asHint(UI.saved),
   asHint(UI.leaderboard),
+  asHint(UI.streak),
 ]

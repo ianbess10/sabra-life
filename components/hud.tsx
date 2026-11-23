@@ -9,6 +9,7 @@ import {
   Bike,
   Bus,
   Car,
+  Flame,
   Home,
   LandPlot,
   Languages,
@@ -29,6 +30,7 @@ import { CITIES } from "@/lib/cities"
 import { UI } from "@/lib/copy"
 import { formatShekels } from "@/lib/format"
 import { HINT_COST, levelFromXp, xpProgress } from "@/lib/levels"
+import { isMissionDayToday } from "@/lib/streak"
 import { useGameStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
 
@@ -58,6 +60,8 @@ export function Hud() {
   const xp = useGameStore((state) => state.xp)
   const location = useGameStore((state) => state.location)
   const inventory = useGameStore((state) => state.inventory)
+  const currentStreak = useGameStore((state) => state.currentStreak)
+  const lastMissionDate = useGameStore((state) => state.lastMissionDate)
   const { requestHint, revealed } = useHint()
   const { user, setLoginOpen, signOut } = useAuth()
   const [leaderboardOpen, setLeaderboardOpen] = useState(false)
@@ -129,6 +133,18 @@ export function Hud() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <span
+            className="inline-flex items-center gap-1 text-sm font-medium tabular-nums"
+            title={`${UI.streak.he}${currentStreak ? ` · ${currentStreak}` : ""}`}
+          >
+            <Flame
+              className={cn(
+                "size-4",
+                isMissionDayToday(lastMissionDate) ? "text-orange-500" : "text-gray-400"
+              )}
+            />
+            {currentStreak}
+          </span>
           <CloudStatus />
           <Button
             variant={leaderboardOpen ? "secondary" : "outline"}

@@ -18,6 +18,9 @@ export type CloudProgress = {
   location: CitySlug
   inventory: Inventory
   completedMissions: string[]
+  currentStreak: number
+  longestStreak: number
+  lastMissionDate: string | null
 }
 
 export type CloudProfileRow = {
@@ -26,6 +29,9 @@ export type CloudProfileRow = {
   xp: number
   location: string
   completed_missions: string[] | null
+  current_streak?: number | null
+  longest_streak?: number | null
+  last_mission_date?: string | null
   updated_at: string
 }
 
@@ -116,6 +122,9 @@ export async function fetchCloudProgress(): Promise<FetchCloudResult> {
       xp: row.xp,
       location: asCity(row.location),
       completedMissions: row.completed_missions ?? [],
+      currentStreak: Number(row.current_streak) || 0,
+      longestStreak: Number(row.longest_streak) || 0,
+      lastMissionDate: row.last_mission_date ?? null,
       inventory: {
         vehicle: asVehicle(bag?.vehicle),
         property: asProperty(bag?.property),
@@ -142,6 +151,9 @@ export async function saveCloudProgress(progress: CloudProgress) {
     xp: progress.xp,
     location: progress.location,
     completed_missions: progress.completedMissions,
+    current_streak: progress.currentStreak,
+    longest_streak: progress.longestStreak,
+    last_mission_date: progress.lastMissionDate,
     updated_at: now,
   })
 

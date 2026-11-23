@@ -18,6 +18,7 @@ import {
 import { UI } from "@/lib/copy"
 import { formatShekels, formatXp } from "@/lib/format"
 import { MISTAKE_PENALTY } from "@/lib/levels"
+import { STREAK_BONUS_SHEKELS } from "@/lib/streak"
 import { useGameStore } from "@/lib/store"
 import type { HintLine, Mission, MissionOption } from "@/lib/types"
 
@@ -52,9 +53,13 @@ function MissionSession({
 }) {
   const [currentNodeId, setCurrentNodeId] = useState("node_1")
   const [celebrating, setCelebrating] = useState(false)
-  const [payout, setPayout] = useState<{ shekels: number; xp: number; paid: boolean } | null>(
-    null
-  )
+  const [payout, setPayout] = useState<{
+    shekels: number
+    xp: number
+    paid: boolean
+    bonus: boolean
+    streak: number
+  } | null>(null)
   const completeMission = useGameStore((state) => state.completeMission)
   const penalizeMistake = useGameStore((state) => state.penalizeMistake)
   const completed = useGameStore((state) => state.completedMissions)
@@ -112,6 +117,16 @@ function MissionSession({
       } else {
         toast.success(UI.practiceDone.he)
       }
+      if (result.bonus) {
+        toast.success(
+          <span dir="ltr" className="block text-start">
+            Streak Bonus Applied
+          </span>,
+          {
+            description: `${UI.streakBonus.he} · ${result.streak} · +${formatShekels(STREAK_BONUS_SHEKELS)}`,
+          }
+        )
+      }
       window.setTimeout(() => onClose(), 1400)
       return
     }
@@ -144,6 +159,11 @@ function MissionSession({
           ) : (
             <p className="text-sm text-muted-foreground">{UI.practiceDone.he}</p>
           )}
+          {payout?.bonus ? (
+            <p className="text-sm text-orange-500">
+              {UI.streakBonus.he} · {payout.streak} · +{formatShekels(STREAK_BONUS_SHEKELS)}
+            </p>
+          ) : null}
         </div>
       ) : node ? (
         <div className="space-y-4">

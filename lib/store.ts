@@ -16,6 +16,7 @@ import {
 } from "@/lib/cloud"
 import { HINT_COST, MISTAKE_PENALTY, levelFromXp } from "@/lib/levels"
 import { getMission } from "@/lib/missions"
+import { STREAK_BONUS_SHEKELS, calculateStreak } from "@/lib/streak"
 import { canTravelTo } from "@/lib/travel"
 import type { CitySlug, Inventory } from "@/lib/types"
 import { isSupabaseConfigured } from "@/utils/supabase/env"
@@ -28,6 +29,9 @@ export type GameState = {
   location: CitySlug
   inventory: Inventory
   completedMissions: string[]
+  currentStreak: number
+  longestStreak: number
+  lastMissionDate: string | null
   hasHydrated: number
   syncStatus: SyncStatus
   userId: string | null
@@ -38,11 +42,15 @@ export type GameState = {
     paid: boolean
     shekels: number
     xp: number
+    bonus: boolean
+    streak: number
   }
   addReward: (missionId: string) => {
     paid: boolean
     shekels: number
     xp: number
+    bonus: boolean
+    streak: number
   }
   buyItem: (itemId: string) => { ok: boolean; messageHe: string; messageEn: string }
   purchaseItem: (itemId: string) => { ok: boolean; messageHe: string; messageEn: string }
@@ -73,6 +81,9 @@ const initialState = {
   location: "tel-aviv" as CitySlug,
   inventory: initialInventory,
   completedMissions: [] as string[],
+  currentStreak: 0,
+  longestStreak: 0,
+  lastMissionDate: null as string | null,
   syncStatus: "idle" as SyncStatus,
 }
 
@@ -85,6 +96,9 @@ function snapshot(state: GameState): CloudProgress {
     location: state.location,
     inventory: state.inventory,
     completedMissions: state.completedMissions,
+    currentStreak: state.currentStreak,
+    longestStreak: state.longestStreak,
+    lastMissionDate: state.lastMissionDate,
   }
 }
 
@@ -127,17 +141,33 @@ export const useGameStore = create<GameState>()(
       },
       completeMission: (missionId) => {
         const mission = getMission(missionId)
-        if (!mission) return { paid: false, shekels: 0, xp: 0 }
-        if (get().completedMissions.includes(missionId)) {
-          return { paid: false, shekels: 0, xp: 0 }
+        if (!mission) {
+          return { paid: false, shekels: 0, xp: 0, bonus: false, streak: get().currentStreak }
         }
+        const alreadyDone = get().completedMissions.includes(missionId)
+        const streak = calculateStreak(get().lastMissionDate, get().currentStreak)
+        const bonusShekels = streak.bonus ? STREAK_BONUS_SHEKELS : 0
+        const missionShekels = alreadyDone ? 0 : mission.shekelReward
+        const xp = alreadyDone ? 0 : mission.xpReward
+        const shekels = missionShekels + bonusShekels
         set({
-          shekels: get().shekels + mission.shekelReward,
-          xp: get().xp + mission.xpReward,
-          completedMissions: [...get().completedMissions, missionId],
+          shekels: get().shekels + shekels,
+          xp: get().xp + xp,
+          completedMissions: alreadyDone
+            ? get().completedMissions
+            : [...get().completedMissions, missionId],
+          currentStreak: streak.streak,
+          longestStreak: Math.max(get().longestStreak, streak.streak),
+          lastMissionDate: streak.lastMissionDate,
         })
         scheduleCloudPush()
-        return { paid: true, shekels: mission.shekelReward, xp: mission.xpReward }
+        return {
+          paid: !alreadyDone,
+          shekels,
+          xp,
+          bonus: streak.bonus,
+          streak: streak.streak,
+        }
       },
       addReward: (missionId) => get().completeMission(missionId),
       buyItem: (itemId) => {
@@ -250,6 +280,9 @@ export const useGameStore = create<GameState>()(
           location: cloud.location,
           inventory: cloud.inventory,
           completedMissions: cloud.completedMissions,
+          currentStreak: cloud.currentStreak,
+          longestStreak: cloud.longestStreak,
+          lastMissionDate: cloud.lastMissionDate,
           syncStatus: "saved",
         })
       },
@@ -277,6 +310,9 @@ export const useGameStore = create<GameState>()(
         location: state.location,
         inventory: state.inventory,
         completedMissions: state.completedMissions,
+        currentStreak: state.currentStreak,
+        longestStreak: state.longestStreak,
+        lastMissionDate: state.lastMissionDate,
       }),
     }
   )

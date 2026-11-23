@@ -9,6 +9,9 @@ create table if not exists public.profiles (
   xp integer not null default 0,
   location text not null default 'tel-aviv',
   completed_missions text[] not null default '{}'::text[],
+  current_streak integer not null default 0,
+  longest_streak integer not null default 0,
+  last_mission_date date,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   primary key (id)
