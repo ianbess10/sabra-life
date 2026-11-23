@@ -1,3 +1,6 @@
+-- Incremental script for existing projects. New production databases
+-- should run supabase/migrations/0001_initial_schema.sql instead.
+--
 -- Sabra Life daily streak — run this in the Supabase SQL Editor
 -- (Dashboard → SQL → New query) after supabase/setup.sql.
 

@@ -1,3 +1,6 @@
+-- Incremental script for existing projects. New production databases
+-- should run supabase/migrations/0001_initial_schema.sql instead.
+--
 -- Sabra Life — run this in the Supabase SQL Editor (Dashboard → SQL → New query).
 -- Creates profiles + inventory, RLS, grants, and an auth trigger that
 -- inserts a profile and inventory row when a user signs up.

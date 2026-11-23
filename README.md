@@ -19,14 +19,18 @@ Open [http://localhost:3847](http://localhost:3847). Progress is always saved in
 You run the SQL yourself in the Supabase dashboard. The app does not apply migrations.
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. Open **SQL Editor**, paste [`supabase/setup.sql`](supabase/setup.sql), and run it. That creates `profiles` and `inventory`, row-level security, and an auth trigger that inserts both rows when a user signs up.
-3. Copy **Project URL** and the **publishable** (or legacy **anon**) key from **Project Settings → API**.
-4. Put them in `.env.local` using the names in `.env.example`, then restart the dev server.
+2. Open **SQL Editor**, paste [`supabase/migrations/0001_initial_schema.sql`](supabase/migrations/0001_initial_schema.sql), and run it. That creates `profiles` (including streak columns and `username`), `inventory`, row-level security, the signup trigger, and the `public_leaderboard` view.
+3. Copy **Project URL** and the **anon** (or publishable) key from **Project Settings → API**.
+4. Put them in `.env.local` as `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (see `.env.example`), then restart the dev server.
 5. Use **כניסה** in the HUD to sign in or register. The HUD shows **שומר…** / **נשמר** while progress syncs.
-6. Run [`supabase/leaderboard.sql`](supabase/leaderboard.sql) in the same SQL Editor. That adds `username`, creates the `public_leaderboard` view (`id`, `username`, `xp`, `shekels`), and grants `SELECT` to `anon` and `authenticated`. The trophy button in the HUD opens the board.
-7. Run [`supabase/streak.sql`](supabase/streak.sql) to add `current_streak`, `longest_streak`, and `last_mission_date` on `profiles`. The first successful mission of a local calendar day lights the HUD flame and pays a ₪10 streak bonus.
 
 Without those keys the game stays fully playable offline. The HUD shows **רק במכשיר**. The leaderboard stays empty until the view exists.
+
+Existing databases that already ran the older split scripts (`setup.sql`, `leaderboard.sql`, `streak.sql`) do not need to run the combined migration.
+
+## Production (Vercel)
+
+Follow [`DEPLOY.md`](DEPLOY.md). Set the two `NEXT_PUBLIC_SUPABASE_*` variables in Vercel **before** the first production build, then add the Vercel domain as the Supabase Auth **Site URL**.
 
 Client helpers live at `utils/supabase/client.ts` and `utils/supabase/server.ts` (TypeScript equivalents of the usual `client.js` / `server.js` SSR pair).
 
