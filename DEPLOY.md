@@ -12,7 +12,21 @@ The first production build is already up. It runs fully offline in the browser (
 - Production deployment serving the Hebrew dashboard, map, and Yad2 shop
 - App Router RTL (`lang="he"` `dir="rtl"`) and a dynamic `/auth/callback` route ready for magic links
 
-This deploy was a file upload, not a Git integration. Pushes to Origin will not auto-deploy until you connect Origin (or GitHub) in the Vercel team's Git settings and link the repo.
+This deploy was a file upload, not a Git integration.
+
+### Git auto-deploys
+
+The Vercel team `ianbess-projects` is **Hobby**. [Vercel for Origin](https://vercel.com/docs/git/vercel-for-origin) is Pro/Enterprise only, and Origin repos are private, so Origin cannot be connected here. GitHub is already installed on the team as **ianbess10**.
+
+To turn on push-to-deploy:
+
+1. Create an empty private GitHub repo named `sabra-life` under `ianbess10` (no README, gitignore, or license): [github.com/new](https://github.com/new).
+2. If the Vercel GitHub App is limited to selected repositories, add `sabra-life` at [github.com/settings/installations](https://github.com/settings/installations).
+3. Tell the agent — it will push `main` and link that repo to the existing `sabra-life` Vercel project.
+
+Until that repo exists, a new production build has to be a dashboard redeploy or another file deployment.
+
+To use Origin (`ianbess/sabra`) instead of GitHub, upgrade the Vercel team to Pro, then **New Project → Continue with Origin**, or install Vercel from [cursor.com/codebase/settings/apps](https://cursor.com/codebase/settings/apps).
 
 ## Cloud save (do this next)
 
@@ -35,9 +49,3 @@ This deploy was a file upload, not a Git integration. Pushes to Origin will not 
    If you also use the team alias, add `https://sabra-life-ianbess-projects.vercel.app/auth/callback`.
 
 5. Sign up once on the live site. The HUD should switch from **רק במכשיר** to **נשמר** after a successful save.
-
-## Auto-deploys on git push (optional)
-
-In the Vercel dashboard for this team: **Settings → Git**, connect **Cursor Origin** (or GitHub if you push a GitHub copy). Then link the Sabra Life repository to project `sabra-life` so `main` builds on every push.
-
-Until that link exists, a new production build has to be a dashboard redeploy or another file deployment.
