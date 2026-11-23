@@ -4,6 +4,7 @@
 
 create table if not exists public.profiles (
   id uuid not null references auth.users on delete cascade,
+  username text,
   shekels integer not null default 200,
   xp integer not null default 0,
   location text not null default 'tel-aviv',
@@ -87,8 +88,15 @@ security definer
 set search_path = ''
 as $$
 begin
-  insert into public.profiles (id)
-  values (new.id);
+  insert into public.profiles (id, username)
+  values (
+    new.id,
+    coalesce(
+      nullif(new.raw_user_meta_data->>'username', ''),
+      nullif(split_part(coalesce(new.email, ''), '@', 1), ''),
+      'oleh-' || substr(new.id::text, 1, 8)
+    )
+  );
 
   insert into public.inventory (user_id)
   values (new.id);
@@ -101,3 +109,11 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+create or replace view public.public_leaderboard
+with (security_invoker = false) as
+select id, username, xp, shekels
+from public.profiles;
+
+grant select on public.public_leaderboard to authenticated;
+grant select on public.public_leaderboard to anon;

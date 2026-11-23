@@ -1,6 +1,16 @@
+import type { User } from "@supabase/supabase-js"
+
 import type { CitySlug, Inventory } from "@/lib/types"
 import { createClient } from "@/utils/supabase/client"
 import { isSupabaseConfigured } from "@/utils/supabase/env"
+
+export function usernameFromUser(user: User) {
+  const meta = user.user_metadata?.username
+  if (typeof meta === "string" && meta.trim()) return meta.trim().slice(0, 32)
+  const fromEmail = user.email?.split("@")[0]
+  if (fromEmail) return fromEmail.slice(0, 32)
+  return `oleh-${user.id.slice(0, 8)}`
+}
 
 export type CloudProgress = {
   shekels: number
@@ -127,6 +137,7 @@ export async function saveCloudProgress(progress: CloudProgress) {
   const now = new Date().toISOString()
   const { error: profileError } = await supabase.from("profiles").upsert({
     id: user.id,
+    username: usernameFromUser(user),
     shekels: progress.shekels,
     xp: progress.xp,
     location: progress.location,

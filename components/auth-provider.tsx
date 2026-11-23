@@ -33,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loginOpen, setLoginOpen] = useState(false)
   const syncWithCloud = useGameStore((state) => state.syncWithCloud)
   const setSyncStatus = useGameStore((state) => state.setSyncStatus)
+  const setUserId = useGameStore((state) => state.setUserId)
 
   useEffect(() => {
     if (!configured) {
@@ -51,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void supabase.auth.getUser().then(({ data }) => {
       if (!active) return
       setUser(data.user ?? null)
+      setUserId(data.user?.id ?? null)
       setLoading(false)
       if (data.user) void syncWithCloud()
       else setSyncStatus("offline")
@@ -60,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null)
+      setUserId(session?.user?.id ?? null)
       if (session?.user && event !== "INITIAL_SESSION") {
         void syncWithCloud()
       }
@@ -70,14 +73,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       active = false
       subscription.unsubscribe()
     }
-  }, [configured, setSyncStatus, syncWithCloud])
+  }, [configured, setSyncStatus, setUserId, syncWithCloud])
 
   const signOut = useCallback(async () => {
     const supabase = createClient()
     if (supabase) await supabase.auth.signOut()
     setUser(null)
+    setUserId(null)
     setSyncStatus("offline")
-  }, [setSyncStatus])
+  }, [setSyncStatus, setUserId])
 
   const value = useMemo(
     () => ({

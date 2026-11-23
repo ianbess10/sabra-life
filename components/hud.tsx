@@ -1,6 +1,6 @@
 "use client"
 
-import type { ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -14,11 +14,13 @@ import {
   Languages,
   MapPinned,
   Smartphone,
+  Trophy,
   Zap,
 } from "lucide-react"
 
 import { useAuth } from "@/components/auth-provider"
 import { CloudStatus } from "@/components/cloud-status"
+import { LeaderboardModal } from "@/components/leaderboard-modal"
 import { useHint } from "@/components/hint-provider"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -58,6 +60,7 @@ export function Hud() {
   const inventory = useGameStore((state) => state.inventory)
   const { requestHint, revealed } = useHint()
   const { user, setLoginOpen, signOut } = useAuth()
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false)
   const level = levelFromXp(xp)
   const city = CITIES.find((item) => item.slug === location)
   const vehicle = ownedVehicleItem(inventory)
@@ -65,7 +68,7 @@ export function Hud() {
   const canHint = shekels >= HINT_COST || revealed
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-[color-mix(in_oklch,var(--background)_88%,black)]/90 backdrop-blur-md">
+    <header className="sticky top-0 z-60 border-b border-border/70 bg-[color-mix(in_oklch,var(--background)_88%,black)]/90 backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-3 md:flex-row md:flex-wrap md:items-center md:justify-between">
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
           <Link href="/" className="font-heading text-lg tracking-tight text-primary">
@@ -127,6 +130,17 @@ export function Hud() {
 
         <div className="flex flex-wrap items-center gap-2">
           <CloudStatus />
+          <Button
+            variant={leaderboardOpen ? "secondary" : "outline"}
+            size="sm"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={() => setLeaderboardOpen((open) => !open)}
+            title={UI.leaderboard.he}
+            aria-pressed={leaderboardOpen}
+          >
+            <Trophy data-icon="inline-start" />
+            {UI.leaderboard.he}
+          </Button>
           {user ? (
             <Button variant="outline" size="sm" onClick={() => void signOut()}>
               {UI.signOut.he}
@@ -149,6 +163,7 @@ export function Hud() {
           </Button>
         </div>
       </div>
+      <LeaderboardModal open={leaderboardOpen} onOpenChange={setLeaderboardOpen} />
     </header>
   )
 }

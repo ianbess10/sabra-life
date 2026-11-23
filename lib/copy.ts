@@ -90,6 +90,28 @@ export const UI = {
   saved: { he: "נשמר", en: "Saved" },
   saveError: { he: "שמירה נכשלה", en: "Save failed" },
   localOnly: { he: "רק במכשיר", en: "This device only" },
+  leaderboard: { he: "לוח", en: "Board" },
+  leaderboardBlurb: {
+    he: "חמישים המובילים. נק״ז או שקלים — אתם בוחרים.",
+    en: "Top fifty. Sort by XP or shekels.",
+  },
+  tabXp: { he: "XP", en: "XP" },
+  tabShekels: { he: "שקלים", en: "Shekels" },
+  boardLoading: { he: "טוען את הלוח…", en: "Loading the board…" },
+  boardEmpty: {
+    he: "עדיין אין דירוג. השלימו משימות והתחברו.",
+    en: "No ranks yet. Finish missions and sign in.",
+  },
+  boardOffline: {
+    he: "הלוח זמין אחרי חיבור ל-Supabase.",
+    en: "The board is available after you connect Supabase.",
+  },
+  boardError: {
+    he: "לא הצלחנו לטעון את הלוח. הריצו את SQL של הלוח ב-Supabase.",
+    en: "Could not load the board. Run the leaderboard SQL in Supabase.",
+  },
+  anonymous: { he: "עולה חדש", en: "New oleh" },
+  you: { he: "אתה", en: "You" },
 } as const
 
 export function asHint(entry: { he: string; en: string }): HintLine {
@@ -108,4 +130,5 @@ export const HUD_HINTS: HintLine[] = [
   asHint(UI.signOut),
   asHint(UI.saving),
   asHint(UI.saved),
+  asHint(UI.leaderboard),
 ]

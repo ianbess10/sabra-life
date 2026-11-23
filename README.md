@@ -23,8 +23,9 @@ You run the SQL yourself in the Supabase dashboard. The app does not apply migra
 3. Copy **Project URL** and the **publishable** (or legacy **anon**) key from **Project Settings → API**.
 4. Put them in `.env.local` using the names in `.env.example`, then restart the dev server.
 5. Use **כניסה** in the HUD to sign in or register. The HUD shows **שומר…** / **נשמר** while progress syncs.
+6. Run [`supabase/leaderboard.sql`](supabase/leaderboard.sql) in the same SQL Editor. That adds `username`, creates the `public_leaderboard` view (`id`, `username`, `xp`, `shekels`), and grants `SELECT` to `anon` and `authenticated`. The trophy button in the HUD opens the board.
 
-Without those keys the game stays fully playable offline. The HUD shows **רק במכשיר**.
+Without those keys the game stays fully playable offline. The HUD shows **רק במכשיר**. The leaderboard stays empty until the view exists.
 
 Client helpers live at `utils/supabase/client.ts` and `utils/supabase/server.ts` (TypeScript equivalents of the usual `client.js` / `server.js` SSR pair).
 

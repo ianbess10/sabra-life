@@ -59,6 +59,7 @@ export function LoginModal() {
         password,
         options: {
           emailRedirectTo: `${origin}/auth/callback`,
+          data: { username: email.split("@")[0] },
         },
       })
       if (error) {

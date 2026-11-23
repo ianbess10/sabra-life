@@ -30,6 +30,7 @@ export type GameState = {
   completedMissions: string[]
   hasHydrated: number
   syncStatus: SyncStatus
+  userId: string | null
   spend: (amount: number) => boolean
   buyHint: () => boolean
   penalizeMistake: () => number
@@ -54,6 +55,7 @@ export type GameState = {
   reset: () => void
   setHydrated: () => void
   setSyncStatus: (status: SyncStatus) => void
+  setUserId: (userId: string | null) => void
   syncWithCloud: () => Promise<void>
   pushToCloud: () => Promise<void>
 }
@@ -103,6 +105,7 @@ export const useGameStore = create<GameState>()(
     (set, get) => ({
       ...initialState,
       hasHydrated: 0,
+      userId: null,
       spend: (amount) => {
         if (amount <= 0) return true
         if (get().shekels < amount) return false
@@ -218,6 +221,7 @@ export const useGameStore = create<GameState>()(
       },
       setHydrated: () => set({ hasHydrated: 1 }),
       setSyncStatus: (status) => set({ syncStatus: status }),
+      setUserId: (userId) => set({ userId }),
       syncWithCloud: async () => {
         if (!isSupabaseConfigured()) {
           set({ syncStatus: "offline" })
