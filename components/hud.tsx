@@ -17,6 +17,8 @@ import {
   Zap,
 } from "lucide-react"
 
+import { useAuth } from "@/components/auth-provider"
+import { CloudStatus } from "@/components/cloud-status"
 import { useHint } from "@/components/hint-provider"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -55,6 +57,7 @@ export function Hud() {
   const location = useGameStore((state) => state.location)
   const inventory = useGameStore((state) => state.inventory)
   const { requestHint, revealed } = useHint()
+  const { user, setLoginOpen, signOut } = useAuth()
   const level = levelFromXp(xp)
   const city = CITIES.find((item) => item.slug === location)
   const vehicle = ownedVehicleItem(inventory)
@@ -122,17 +125,29 @@ export function Hud() {
           </div>
         </div>
 
-        <Button
-          variant={revealed ? "secondary" : "outline"}
-          size="sm"
-          className="min-w-40 shrink-0"
-          disabled={!canHint && !revealed}
-          onClick={() => requestHint()}
-          title={!canHint ? UI.noMoney.he : UI.hint.he}
-        >
-          <Languages data-icon="inline-start" />
-          {revealed ? "תרגום פעיל" : `${UI.hint.he} · ₪${HINT_COST}`}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <CloudStatus />
+          {user ? (
+            <Button variant="outline" size="sm" onClick={() => void signOut()}>
+              {UI.signOut.he}
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" onClick={() => setLoginOpen(true)}>
+              {UI.signIn.he}
+            </Button>
+          )}
+          <Button
+            variant={revealed ? "secondary" : "outline"}
+            size="sm"
+            className="min-w-40 shrink-0"
+            disabled={!canHint && !revealed}
+            onClick={() => requestHint()}
+            title={!canHint ? UI.noMoney.he : UI.hint.he}
+          >
+            <Languages data-icon="inline-start" />
+            {revealed ? "תרגום פעיל" : `${UI.hint.he} · ₪${HINT_COST}`}
+          </Button>
+        </div>
       </div>
     </header>
   )

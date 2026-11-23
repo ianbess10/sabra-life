@@ -8,10 +8,19 @@ import {
   canPurchase,
   getCatalogItem,
 } from "@/lib/catalog"
+import {
+  fetchCloudProgress,
+  progressScore,
+  saveCloudProgress,
+  type CloudProgress,
+} from "@/lib/cloud"
 import { HINT_COST, MISTAKE_PENALTY, levelFromXp } from "@/lib/levels"
 import { getMission } from "@/lib/missions"
 import { canTravelTo } from "@/lib/travel"
 import type { CitySlug, Inventory } from "@/lib/types"
+import { isSupabaseConfigured } from "@/utils/supabase/env"
+
+export type SyncStatus = "idle" | "saving" | "saved" | "offline" | "error"
 
 export type GameState = {
   shekels: number
@@ -20,6 +29,7 @@ export type GameState = {
   inventory: Inventory
   completedMissions: string[]
   hasHydrated: number
+  syncStatus: SyncStatus
   spend: (amount: number) => boolean
   buyHint: () => boolean
   penalizeMistake: () => number
@@ -28,7 +38,13 @@ export type GameState = {
     shekels: number
     xp: number
   }
+  addReward: (missionId: string) => {
+    paid: boolean
+    shekels: number
+    xp: number
+  }
   buyItem: (itemId: string) => { ok: boolean; messageHe: string; messageEn: string }
+  purchaseItem: (itemId: string) => { ok: boolean; messageHe: string; messageEn: string }
   travelTo: (city: CitySlug) => {
     ok: boolean
     cost: number
@@ -37,6 +53,9 @@ export type GameState = {
   }
   reset: () => void
   setHydrated: () => void
+  setSyncStatus: (status: SyncStatus) => void
+  syncWithCloud: () => Promise<void>
+  pushToCloud: () => Promise<void>
 }
 
 const initialInventory: Inventory = {
@@ -52,6 +71,31 @@ const initialState = {
   location: "tel-aviv" as CitySlug,
   inventory: initialInventory,
   completedMissions: [] as string[],
+  syncStatus: "idle" as SyncStatus,
+}
+
+let saveTimer: ReturnType<typeof setTimeout> | null = null
+
+function snapshot(state: GameState): CloudProgress {
+  return {
+    shekels: state.shekels,
+    xp: state.xp,
+    location: state.location,
+    inventory: state.inventory,
+    completedMissions: state.completedMissions,
+  }
+}
+
+function scheduleCloudPush() {
+  if (!isSupabaseConfigured()) {
+    useGameStore.setState({ syncStatus: "offline" })
+    return
+  }
+  useGameStore.setState({ syncStatus: "saving" })
+  if (saveTimer) clearTimeout(saveTimer)
+  saveTimer = setTimeout(() => {
+    void useGameStore.getState().pushToCloud()
+  }, 450)
 }
 
 export const useGameStore = create<GameState>()(
@@ -63,16 +107,19 @@ export const useGameStore = create<GameState>()(
         if (amount <= 0) return true
         if (get().shekels < amount) return false
         set({ shekels: get().shekels - amount })
+        scheduleCloudPush()
         return true
       },
       buyHint: () => {
         if (get().shekels < HINT_COST) return false
         set({ shekels: get().shekels - HINT_COST })
+        scheduleCloudPush()
         return true
       },
       penalizeMistake: () => {
         const deducted = Math.min(MISTAKE_PENALTY, get().shekels)
         if (deducted > 0) set({ shekels: get().shekels - deducted })
+        scheduleCloudPush()
         return deducted
       },
       completeMission: (missionId) => {
@@ -86,8 +133,10 @@ export const useGameStore = create<GameState>()(
           xp: get().xp + mission.xpReward,
           completedMissions: [...get().completedMissions, missionId],
         })
+        scheduleCloudPush()
         return { paid: true, shekels: mission.shekelReward, xp: mission.xpReward }
       },
+      addReward: (missionId) => get().completeMission(missionId),
       buyItem: (itemId) => {
         const item = getCatalogItem(itemId)
         if (!item) {
@@ -118,12 +167,14 @@ export const useGameStore = create<GameState>()(
           shekels: get().shekels - item.price,
           inventory: applyPurchase(get().inventory, item),
         })
+        scheduleCloudPush()
         return {
           ok: true,
           messageHe: `קנית ${item.nameHe}`,
           messageEn: `You bought ${item.nameEn}`,
         }
       },
+      purchaseItem: (itemId) => get().buyItem(itemId),
       travelTo: (city) => {
         const state = get()
         const level = levelFromXp(state.xp).level
@@ -147,6 +198,7 @@ export const useGameStore = create<GameState>()(
         } else {
           set({ location: city })
         }
+        scheduleCloudPush()
         return {
           ok: true,
           cost: result.cost,
@@ -160,8 +212,57 @@ export const useGameStore = create<GameState>()(
               : "You arrived. The trip was free.",
         }
       },
-      reset: () => set({ ...initialState, inventory: { ...initialInventory } }),
+      reset: () => {
+        set({ ...initialState, inventory: { ...initialInventory } })
+        scheduleCloudPush()
+      },
       setHydrated: () => set({ hasHydrated: 1 }),
+      setSyncStatus: (status) => set({ syncStatus: status }),
+      syncWithCloud: async () => {
+        if (!isSupabaseConfigured()) {
+          set({ syncStatus: "offline" })
+          return
+        }
+        set({ syncStatus: "saving" })
+        const result = await fetchCloudProgress()
+        if (!result.ok) {
+          if (result.reason === "missing") {
+            await get().pushToCloud()
+            return
+          }
+          if (result.reason === "error") set({ syncStatus: "error" })
+          else set({ syncStatus: "offline" })
+          return
+        }
+        const cloud = result.progress
+        const local = snapshot(get())
+        if (progressScore(local) > progressScore(cloud)) {
+          await get().pushToCloud()
+          return
+        }
+        set({
+          shekels: cloud.shekels,
+          xp: cloud.xp,
+          location: cloud.location,
+          inventory: cloud.inventory,
+          completedMissions: cloud.completedMissions,
+          syncStatus: "saved",
+        })
+      },
+      pushToCloud: async () => {
+        if (!isSupabaseConfigured()) {
+          set({ syncStatus: "offline" })
+          return
+        }
+        set({ syncStatus: "saving" })
+        const result = await saveCloudProgress(snapshot(get()))
+        if (result.ok) set({ syncStatus: "saved" })
+        else if (result.reason === "signed-out" || result.reason === "offline") {
+          set({ syncStatus: "offline" })
+        } else {
+          set({ syncStatus: "error" })
+        }
+      },
     }),
     {
       name: "sabra-life",

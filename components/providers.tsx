@@ -2,8 +2,10 @@
 
 import { useEffect, useState, type ReactNode } from "react"
 
+import { AuthProvider } from "@/components/auth-provider"
 import { HintProvider } from "@/components/hint-provider"
 import { Hud } from "@/components/hud"
+import { LoginModal } from "@/components/login-modal"
 import { Toaster } from "@/components/ui/sonner"
 import { UI } from "@/lib/copy"
 import { useGameStore } from "@/lib/store"
@@ -28,10 +30,13 @@ export function Providers({ children }: { children: ReactNode }) {
   }
 
   return (
-    <HintProvider>
-      <Hud />
-      <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</div>
-      <Toaster position="bottom-center" theme="dark" dir="rtl" />
-    </HintProvider>
+    <AuthProvider>
+      <HintProvider>
+        <Hud />
+        <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</div>
+        <LoginModal />
+        <Toaster position="bottom-center" theme="dark" dir="rtl" />
+      </HintProvider>
+    </AuthProvider>
   )
 }

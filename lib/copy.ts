@@ -67,6 +67,29 @@ export const UI = {
   },
   inventoryTitle: { he: "הרכוש שלך", en: "Your stuff" },
   emptyMissions: { he: "אין משימות זמינות ברמה הנוכחית.", en: "No missions at your current level." },
+  signIn: { he: "כניסה", en: "Sign in" },
+  signUp: { he: "הרשמה", en: "Sign up" },
+  signOut: { he: "התנתקות", en: "Sign out" },
+  email: { he: "אימייל", en: "Email" },
+  password: { he: "סיסמה", en: "Password" },
+  authBlurb: {
+    he: "שמרו את ההתקדמות בענן. בלי חשבון — הכל נשאר במכשיר.",
+    en: "Save progress to the cloud. Without an account, everything stays on this device.",
+  },
+  signedIn: { he: "התחברת. ההתקדמות מסונכרנת.", en: "Signed in. Progress is syncing." },
+  checkEmail: {
+    he: "נשלח מייל אישור. פתחו את הקישור כדי להשלים הרשמה.",
+    en: "Check your email for a confirmation link to finish signing up.",
+  },
+  supabaseMissing: {
+    he: "Supabase לא מוגדר. הוסיפו URL ומפתח בקובץ הסביבה.",
+    en: "Supabase is not configured. Add the URL and key to the env file.",
+  },
+  working: { he: "רגע…", en: "One moment…" },
+  saving: { he: "שומר…", en: "Saving…" },
+  saved: { he: "נשמר", en: "Saved" },
+  saveError: { he: "שמירה נכשלה", en: "Save failed" },
+  localOnly: { he: "רק במכשיר", en: "This device only" },
 } as const
 
 export function asHint(entry: { he: string; en: string }): HintLine {
@@ -81,4 +104,8 @@ export const HUD_HINTS: HintLine[] = [
   asHint(UI.level),
   asHint(UI.bank),
   asHint(UI.location),
+  asHint(UI.signIn),
+  asHint(UI.signOut),
+  asHint(UI.saving),
+  asHint(UI.saved),
 ]
