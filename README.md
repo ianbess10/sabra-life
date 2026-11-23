@@ -39,6 +39,7 @@ Client helpers live at `utils/supabase/client.ts` and `utils/supabase/server.ts`
 5. Tap **רמז באנגלית** to reveal English for the current screen — it deducts ₪50.
 6. A wrong mission answer costs ₪5. The right line advances the dialogue tree; finishing a tree pays `xpReward` and `shekelReward`.
 7. Tap the speaker button next to a line to hear it in Hebrew (`he-IL`, slightly slow). Audio lives in `hooks/useHebrewTTS.js` so a later cloud TTS swap does not touch the mission UI.
+8. Dashed words in a mission line cost ₪1 each and show an English gloss. The ₪50 hint still translates the whole screen.
 
 ## Stack
 

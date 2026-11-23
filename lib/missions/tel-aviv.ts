@@ -18,6 +18,15 @@ export const TEL_AVIV_EXTRA: Mission[] = [
         speaker: "בחורה בתחנה",
         hebrewText: "אתה אבוד? כולם אבודים פה ביום הראשון.",
         englishTranslation: "Are you lost? Everyone is lost here on day one.",
+        wordBank: {
+          אתה: "you",
+          אבוד: "lost",
+          כולם: "everyone",
+          אבודים: "lost (plural)",
+          פה: "here",
+          ביום: "on the day",
+          הראשון: "the first",
+        },
         options: [
           {
             text: "יש שירות לרוטשילד? כמה זה עולה?",
@@ -44,6 +53,18 @@ export const TEL_AVIV_EXTRA: Mission[] = [
         speaker: "נהג שירות",
         hebrewText: "חמישה עשר. יש רב-קו או מזומן. תחליט מהר, אני נוסע.",
         englishTranslation: "Fifteen. Rav-Kav or cash. Decide fast, I am leaving.",
+        wordBank: {
+          חמישה: "five",
+          עשר: "ten (fifteen together)",
+          יש: "there is",
+          "רב-קו": "Rav-Kav",
+          או: "or",
+          מזומן: "cash",
+          תחליט: "decide",
+          מהר: "fast",
+          אני: "I",
+          נוסע: "am leaving / driving",
+        },
         options: [
           {
             text: "רגע, יש לי רב-קו. איפה מעבירים?",
@@ -70,6 +91,16 @@ export const TEL_AVIV_EXTRA: Mission[] = [
         speaker: "אפליקציית הקורקינט",
         hebrewText: "רוצה קורקינט? צריך קסדה. מה עושים בסוף הנסיעה?",
         englishTranslation: "Want a scooter? You need a helmet. What do you do at the end of the ride?",
+        wordBank: {
+          רוצה: "want",
+          קורקינט: "scooter",
+          צריך: "need",
+          קסדה: "helmet",
+          מה: "what",
+          עושים: "do (you do)",
+          בסוף: "at the end",
+          הנסיעה: "the ride",
+        },
         options: [
           {
             text: "יש לי קסדה. איפה משאירים את הקורקינט?",

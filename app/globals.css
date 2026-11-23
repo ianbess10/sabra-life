@@ -46,6 +46,18 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --animate-word-hint-float: word-hint-float 700ms ease-out forwards;
+}
+
+@keyframes word-hint-float {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, 0.35rem);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -0.2rem);
+  }
 }
 
 :root {

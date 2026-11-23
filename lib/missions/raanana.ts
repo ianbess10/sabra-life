@@ -18,6 +18,17 @@ export const RAANANA_MISSIONS: Mission[] = [
         speaker: "בנקאית ברעננה",
         hebrewText: "בוקר טוב. במה אוכל לעזור? יש תור לייעוץ משכנתאות.",
         englishTranslation: "Good morning. How can I help? There is a line for mortgage advice.",
+        wordBank: {
+          בוקר: "morning",
+          טוב: "good",
+          במה: "with what / how",
+          אוכל: "can I",
+          לעזור: "help",
+          יש: "there is",
+          תור: "a line",
+          לייעוץ: "for advice",
+          משכנתאות: "mortgages",
+        },
         options: [
           {
             text: "אני מעוניין במשכנתא לרכישת בית",
@@ -44,6 +55,14 @@ export const RAANANA_MISSIONS: Mission[] = [
         speaker: "בנקאית ברעננה",
         hebrewText: "מה אחוז ההון העצמי שאתם מביאים?",
         englishTranslation: "What percent down payment are you bringing?",
+        wordBank: {
+          מה: "what",
+          אחוז: "percent",
+          ההון: "the capital / equity",
+          העצמי: "own (down payment)",
+          שאתם: "that you",
+          מביאים: "are bringing",
+        },
         options: [
           {
             text: "עשרים וחמישה אחוז הון עצמי",
@@ -70,6 +89,11 @@ export const RAANANA_MISSIONS: Mission[] = [
         speaker: "בנקאית ברעננה",
         hebrewText: "איזה לוח סילוקין?",
         englishTranslation: "Which repayment schedule?",
+        wordBank: {
+          איזה: "which",
+          לוח: "schedule / table",
+          סילוקין: "repayment",
+        },
         options: [
           {
             text: "שפיצר",
@@ -111,6 +135,13 @@ export const RAANANA_MISSIONS: Mission[] = [
         speaker: "פקיד בעירייה",
         hebrewText: "שלום, פה גבייה. מה העניין?",
         englishTranslation: "Hello, this is collections. What's the issue?",
+        wordBank: {
+          שלום: "hello",
+          פה: "here",
+          גבייה: "collections",
+          מה: "what",
+          העניין: "the issue",
+        },
         options: [
           {
             text: "אני רוצה לפתוח חשבון ארנונה לנכס חדש",
@@ -137,6 +168,18 @@ export const RAANANA_MISSIONS: Mission[] = [
         speaker: "פקיד בעירייה",
         hebrewText: "יש גם חשבון מים. רוצה הנחה לעולה חדש לשנה הראשונה?",
         englishTranslation: "There is also a water bill. Want the first-year new-immigrant discount?",
+        wordBank: {
+          יש: "there is",
+          גם: "also",
+          חשבון: "bill / account",
+          מים: "water",
+          רוצה: "want",
+          הנחה: "a discount",
+          לעולה: "for an immigrant",
+          חדש: "new",
+          לשנה: "for the year",
+          הראשונה: "the first",
+        },
         options: [
           {
             text: "כן, יש לי תעודת עולה. אשמח להנחה",
@@ -177,6 +220,15 @@ export const RAANANA_MISSIONS: Mission[] = [
         speaker: "יו״ר הדירקטוריון",
         hebrewText: "יש לך שלוש דקות. בלי שקפים באנגלית.",
         englishTranslation: "You have three minutes. No English slides.",
+        wordBank: {
+          יש: "you have",
+          לך: "you",
+          שלוש: "three",
+          דקות: "minutes",
+          בלי: "without",
+          שקפים: "slides",
+          באנגלית: "in English",
+        },
         options: [
           {
             text: "הפתרון שלנו מקצר את זמן העיבוד בארבעים אחוז",
@@ -203,6 +255,14 @@ export const RAANANA_MISSIONS: Mission[] = [
         speaker: "סמנכ״ל כספים",
         hebrewText: "תמחור. מנוי חודשי או לפי שימוש?",
         englishTranslation: "Pricing. Monthly subscription or usage-based?",
+        wordBank: {
+          תמחור: "pricing",
+          מנוי: "subscription",
+          חודשי: "monthly",
+          או: "or",
+          לפי: "by / according to",
+          שימוש: "usage",
+        },
         options: [
           {
             text: "מנוי חודשי עם פיילוט חינם לשלושה חודשים",

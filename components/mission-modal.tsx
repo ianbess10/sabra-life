@@ -5,6 +5,7 @@ import { toast } from "sonner"
 import { CheckCircle2, UserRound, Volume2 } from "lucide-react"
 
 import { Hinted } from "@/components/hinted"
+import { InteractiveHebrewText } from "@/components/interactive-hebrew-text"
 import { useHebrewTTS } from "@/hooks/useHebrewTTS"
 import { useHint } from "@/components/hint-provider"
 import { Button } from "@/components/ui/button"
@@ -189,9 +190,14 @@ function MissionSession({
                   <Volume2 className={isPlaying ? "size-4 text-primary" : "size-4"} />
                 </button>
               </div>
-              <p className="mt-2 font-heading text-2xl font-medium leading-relaxed">
-                <Hinted he={node.hebrewText} en={node.englishTranslation} />
+              <p className="mt-8 font-heading text-2xl font-medium leading-relaxed">
+                <InteractiveHebrewText
+                  key={node.id}
+                  text={node.hebrewText}
+                  wordBank={node.wordBank}
+                />
               </p>
+              <p className="mt-1 text-[0.7rem] text-muted-foreground">{UI.wordHint.he}</p>
             </div>
           </div>
 

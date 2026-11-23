@@ -34,11 +34,14 @@ export type MissionOption = {
   feedback?: string
 }
 
+export type WordBank = Record<string, string>
+
 export type MissionNode = {
   id: string
   speaker: string
   hebrewText: string
   englishTranslation: string
+  wordBank?: WordBank
   options: MissionOption[]
 }
 

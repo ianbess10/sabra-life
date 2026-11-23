@@ -115,6 +115,7 @@ export const UI = {
   streak: { he: "רצף", en: "Streak" },
   streakBonus: { he: "בונוס רצף", en: "Streak Bonus Applied" },
   listen: { he: "השמע", en: "Play audio" },
+  wordHint: { he: "מילה ב־₪1", en: "One word for ₪1" },
 } as const
 
 export function asHint(entry: { he: string; en: string }): HintLine {

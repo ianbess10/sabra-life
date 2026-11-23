@@ -47,6 +47,7 @@ export const LEVELS: UlpanLevel[] = [
 ]
 
 export const HINT_COST = 50
+export const WORD_HINT_COST = 1
 export const TRANSIT_FARE = 15
 export const MISTAKE_PENALTY = 5
 

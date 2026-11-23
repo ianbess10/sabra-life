@@ -15,6 +15,12 @@ export const telAvivMissions: MissionScript[] = [
         speaker: "מלצר (Waiter)",
         hebrewText: "שלום, מה תרצה להזמין?",
         englishTranslation: "Hello, what would you like to order?",
+        wordBank: {
+          שלום: "hello",
+          מה: "what",
+          תרצה: "would you like",
+          להזמין: "to order",
+        },
         options: [
           {
             text: "אני רוצה קפה הפוך בבקשה.",
@@ -41,6 +47,13 @@ export const telAvivMissions: MissionScript[] = [
         speaker: "מלצר (Waiter)",
         hebrewText: "איזה גודל? קטן או גדול?",
         englishTranslation: "What size? Small or large?",
+        wordBank: {
+          איזה: "which",
+          גודל: "size",
+          קטן: "small",
+          או: "or",
+          גדול: "large",
+        },
         options: [
           {
             text: "גדול בבקשה, עם חלב שיבולת שועל.",
@@ -61,6 +74,16 @@ export const telAvivMissions: MissionScript[] = [
         speaker: "מלצר (Waiter)",
         hebrewText: "מצוין. זה יוצא עשרים שקלים. באשראי או במזומן?",
         englishTranslation: "Excellent. That comes to twenty shekels. Credit or cash?",
+        wordBank: {
+          מצוין: "excellent",
+          זה: "this",
+          יוצא: "comes to",
+          עשרים: "twenty",
+          שקלים: "shekels",
+          באשראי: "by credit",
+          או: "or",
+          במזומן: "in cash",
+        },
         options: [
           {
             text: "באשראי, בבקשה.",
@@ -92,6 +115,18 @@ export const telAvivMissions: MissionScript[] = [
         speaker: "מוכר (Vendor)",
         hebrewText: "עגבניות הכי טובות בשוק! רק עשרה שקלים לקילו! בוא, אחי!",
         englishTranslation: "Best tomatoes in the market! Only ten shekels a kilo! Come, brother!",
+        wordBank: {
+          עגבניות: "tomatoes",
+          הכי: "the most",
+          טובות: "good / best",
+          בשוק: "in the market",
+          רק: "only",
+          עשרה: "ten",
+          שקלים: "shekels",
+          לקילו: "per kilo",
+          בוא: "come",
+          אחי: "brother / dude",
+        },
         options: [
           {
             text: "איפה הים?",
@@ -119,6 +154,15 @@ export const telAvivMissions: MissionScript[] = [
         speaker: "מוכר (Vendor)",
         hebrewText: "בבקשה. תרצה גם מלפפונים? יש מבצע היום.",
         englishTranslation: "Here you go. Would you like cucumbers too? There is a sale today.",
+        wordBank: {
+          בבקשה: "here you go / please",
+          תרצה: "would you like",
+          גם: "also",
+          מלפפונים: "cucumbers",
+          יש: "there is",
+          מבצע: "sale",
+          היום: "today",
+        },
         options: [
           {
             text: "לא, רק עגבניות. קח מזומן.",

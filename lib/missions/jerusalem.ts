@@ -18,6 +18,19 @@ export const JERUSALEM_MISSIONS: Mission[] = [
         speaker: "שומר בכניסה",
         hebrewText: "יש לך מספר? בלי מספר אין כניסה, גם אם באת מניו יורק.",
         englishTranslation: "Do you have a number? No number, no entry, even if you came from New York.",
+        wordBank: {
+          יש: "there is / do you have",
+          לך: "you (have)",
+          מספר: "number",
+          בלי: "without",
+          אין: "there is no",
+          כניסה: "entry",
+          גם: "even / also",
+          אם: "if",
+          באת: "you came",
+          מניו: "from New",
+          יורק: "York",
+        },
         options: [
           {
             text: "שלום, איפה מקבלים מספר לתור?",
@@ -44,6 +57,13 @@ export const JERUSALEM_MISSIONS: Mission[] = [
         speaker: "טופס 334",
         hebrewText: "סעיף 4: מטרת הפנייה. מה כותבים?",
         englishTranslation: "Section 4: purpose of visit. What do you write?",
+        wordBank: {
+          סעיף: "section",
+          מטרת: "purpose of",
+          הפנייה: "the visit / application",
+          מה: "what",
+          כותבים: "do you write",
+        },
         options: [
           {
             text: "חידוש אשרת שהייה",
@@ -71,6 +91,17 @@ export const JERUSALEM_MISSIONS: Mission[] = [
         hebrewText: "יש דרכון ותעודת עולה? תוציא עכשיו, לא עוד שעה.",
         englishTranslation:
           "Do you have a passport and immigrant certificate? Take them out now, not in an hour.",
+        wordBank: {
+          יש: "do you have",
+          דרכון: "passport",
+          ותעודת: "and a certificate",
+          עולה: "immigrant",
+          תוציא: "take out",
+          עכשיו: "now",
+          לא: "not",
+          עוד: "another",
+          שעה: "hour",
+        },
         options: [
           {
             text: "כן, הנה הדרכון ותעודת עולה חדש",
@@ -111,6 +142,15 @@ export const JERUSALEM_MISSIONS: Mission[] = [
         speaker: "מוכר במחנה יהודה",
         hebrewText: "יאללה גבר, כמה על הבורקס? אל תתבייש.",
         englishTranslation: "Come on man, how much for the burekas? Don't be shy.",
+        wordBank: {
+          יאללה: "come on",
+          גבר: "man",
+          כמה: "how much",
+          על: "for",
+          הבורקס: "the burekas",
+          אל: "don't",
+          תתבייש: "be shy",
+        },
         options: [
           {
             text: "תגיד מחיר הוגן, אל תעבוד עליי",
@@ -137,6 +177,13 @@ export const JERUSALEM_MISSIONS: Mission[] = [
         speaker: "מוכר בורקס",
         hebrewText: "גבינה, תפוח אדמה או תרד?",
         englishTranslation: "Cheese, potato, or spinach?",
+        wordBank: {
+          גבינה: "cheese",
+          תפוח: "apple / (with potato = potato)",
+          אדמה: "earth (תפוח אדמה = potato)",
+          או: "or",
+          תרד: "spinach",
+        },
         options: [
           {
             text: "גבינה בבקשה",
@@ -177,6 +224,14 @@ export const JERUSALEM_MISSIONS: Mission[] = [
         speaker: "תושב ליד שער יפו",
         hebrewText: "אתה מחפש משהו או רק מצלם?",
         englishTranslation: "Are you looking for something or just taking photos?",
+        wordBank: {
+          אתה: "you",
+          מחפש: "looking for",
+          משהו: "something",
+          או: "or",
+          רק: "just",
+          מצלם: "taking photos",
+        },
         options: [
           {
             text: "סליחה, איך מגיעים לכותל מכאן?",
@@ -203,6 +258,13 @@ export const JERUSALEM_MISSIONS: Mission[] = [
         speaker: "ההוראות בראש",
         hebrewText: "הקשת מאחוריך. מה הצעד הבא?",
         englishTranslation: "The arch is behind you. What is the next step?",
+        wordBank: {
+          הקשת: "the arch",
+          מאחוריך: "behind you",
+          מה: "what",
+          הצעד: "the step",
+          הבא: "next",
+        },
         options: [
           {
             text: "פונים ימין, ואחרי המדרגות שמאלה",
