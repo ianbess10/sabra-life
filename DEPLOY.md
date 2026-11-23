@@ -12,21 +12,20 @@ The first production build is already up. It runs fully offline in the browser (
 - Production deployment serving the Hebrew dashboard, map, and Yad2 shop
 - App Router RTL (`lang="he"` `dir="rtl"`) and a dynamic `/auth/callback` route ready for magic links
 
-This deploy was a file upload, not a Git integration.
+The public URL currently serves a GitHub-backed production build of `main` (`e0f118a`). Push-to-deploy is wired on a second Vercel project because MCP cannot attach Git to an existing same-name project.
 
 ### Git auto-deploys
 
-The Vercel team `ianbess-projects` is **Hobby**. [Vercel for Origin](https://vercel.com/docs/git/vercel-for-origin) is Pro/Enterprise only, and Origin repos are private, so Origin cannot be connected here. GitHub is already installed on the team as **ianbess10**.
+Source: [github.com/ianbess10/sabra-life](https://github.com/ianbess10/sabra-life) (`main`).
 
-To turn on push-to-deploy:
+| URL | Vercel project | Git |
+|---|---|---|
+| [sabra-life.vercel.app](https://sabra-life.vercel.app) | `sabra-life` (`prj_RdKsJKfgHwwuHj3Yp456QCrwuL5O`) | Latest `main` is deployed; new pushes do **not** rebuild this URL |
+| [sabra-life-git.vercel.app](https://sabra-life-git.vercel.app) | `sabra-life-git` (`prj_lVugVQwVLOBgsXDsnRtv8ng3Bpel`) | Linked to `ianbess10/sabra-life`. Every push to `main` rebuilds this URL |
 
-1. Create an empty private GitHub repo named `sabra-life` under `ianbess10` (no README, gitignore, or license): [github.com/new](https://github.com/new).
-2. If the Vercel GitHub App is limited to selected repositories, add `sabra-life` at [github.com/settings/installations](https://github.com/settings/installations).
-3. Tell the agent — it will push `main` and link that repo to the existing `sabra-life` Vercel project.
+The Vercel team `ianbess-projects` is **Hobby**. [Vercel for Origin](https://vercel.com/docs/git/vercel-for-origin) is Pro/Enterprise only, so Origin (`ianbess/sabra`) cannot be the Git provider here.
 
-Until that repo exists, a new production build has to be a dashboard redeploy or another file deployment.
-
-To use Origin (`ianbess/sabra`) instead of GitHub, upgrade the Vercel team to Pro, then **New Project → Continue with Origin**, or install Vercel from [cursor.com/codebase/settings/apps](https://cursor.com/codebase/settings/apps).
+To make **sabra-life.vercel.app** itself rebuild on push, open [vercel.com/ianbess-projects/sabra-life/settings/git](https://vercel.com/ianbess-projects/sabra-life/settings/git) → **Connect Git Repository** → `ianbess10/sabra-life`. After that, `sabra-life-git` is redundant and can be deleted.
 
 ## Cloud save (do this next)
 

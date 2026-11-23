@@ -30,7 +30,7 @@ Existing databases that already ran the older split scripts (`setup.sql`, `leade
 
 ## Production (Vercel)
 
-Live at [https://sabra-life.vercel.app](https://sabra-life.vercel.app). Follow [`DEPLOY.md`](DEPLOY.md) to add production Supabase keys, rebuild, and point Auth at that domain. Until those keys exist, the live game still works with local progress only.
+Live at [https://sabra-life.vercel.app](https://sabra-life.vercel.app). Source is [github.com/ianbess10/sabra-life](https://github.com/ianbess10/sabra-life). Push-to-deploy currently rebuilds [https://sabra-life-git.vercel.app](https://sabra-life-git.vercel.app); see [`DEPLOY.md`](DEPLOY.md) to attach Git to the public URL, add production Supabase keys, and point Auth at the live domain. Until those keys exist, the live game still works with local progress only.
 
 Client helpers live at `utils/supabase/client.ts` and `utils/supabase/server.ts` (TypeScript equivalents of the usual `client.js` / `server.js` SSR pair).
 
