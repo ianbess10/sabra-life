@@ -16,8 +16,14 @@ export const TEL_AVIV_EXTRA: Mission[] = [
       {
         id: "node_1",
         speaker: "בחורה בתחנה",
-        hebrewText: "אתה אבוד? כולם אבודים פה ביום הראשון.",
-        englishTranslation: "Are you lost? Everyone is lost here on day one.",
+        hebrewText: {
+          male: "אתה אבוד? כולם אבודים פה ביום הראשון.",
+          female: "את אבודה? כולם אבודים פה ביום הראשון.",
+        },
+        englishTranslation: {
+          male: "Are you (m.) lost? Everyone is lost here on day one.",
+          female: "Are you (f.) lost? Everyone is lost here on day one.",
+        },
         wordBank: {
           אתה: "you",
           אבוד: "lost",
@@ -51,8 +57,14 @@ export const TEL_AVIV_EXTRA: Mission[] = [
       {
         id: "node_2",
         speaker: "נהג שירות",
-        hebrewText: "חמישה עשר. יש רב-קו או מזומן. תחליט מהר, אני נוסע.",
-        englishTranslation: "Fifteen. Rav-Kav or cash. Decide fast, I am leaving.",
+        hebrewText: {
+          male: "חמישה עשר. יש רב-קו או מזומן. תחליט מהר, אני נוסע.",
+          female: "חמישה עשר. יש רב-קו או מזומן. תחליטי מהר, אני נוסע.",
+        },
+        englishTranslation: {
+          male: "Fifteen. Rav-Kav or cash. Decide (m.) fast, I am leaving.",
+          female: "Fifteen. Rav-Kav or cash. Decide (f.) fast, I am leaving.",
+        },
         wordBank: {
           חמישה: "five",
           עשר: "ten (fifteen together)",
@@ -60,7 +72,8 @@ export const TEL_AVIV_EXTRA: Mission[] = [
           "רב-קו": "Rav-Kav",
           או: "or",
           מזומן: "cash",
-          תחליט: "decide",
+          תחליט: "decide (m.)",
+          תחליטי: "decide (f.)",
           מהר: "fast",
           אני: "I",
           נוסע: "am leaving / driving",
@@ -73,8 +86,14 @@ export const TEL_AVIV_EXTRA: Mission[] = [
             nextNode: "node_3",
           },
           {
-            text: "אני לא משלם, אני תייר",
-            englishTranslation: "I am not paying, I am a tourist",
+            text: {
+              male: "אני לא משלם, אני תייר",
+              female: "אני לא משלמת, אני תיירת",
+            },
+            englishTranslation: {
+              male: "I am not paying (m.), I am a tourist (m.)",
+              female: "I am not paying (f.), I am a tourist (f.)",
+            },
             isCorrect: false,
             feedback: "A tourist pays more, not less. Get off or pay.",
           },

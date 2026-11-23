@@ -43,17 +43,22 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  variant = "default",
   ...props
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean
+  variant?: "default" | "cinematic"
 }) {
+  const cinematic = variant === "cinematic"
   return (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogOverlay className={cinematic ? "bg-black/80 backdrop-blur-md" : undefined} />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 start-1/2 z-70 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 rtl:translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          cinematic
+            ? "fixed inset-0 z-70 flex h-dvh w-full flex-col overflow-hidden bg-black p-0 text-white outline-none duration-200 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0"
+            : "fixed top-1/2 start-1/2 z-70 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 rtl:translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className
         )}
         {...props}

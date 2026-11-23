@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { UI } from "@/lib/copy"
 import { formatShekels, formatXp } from "@/lib/format"
+import { genderedCopy } from "@/lib/gender"
 import {
   fetchLeaderboard,
   type LeaderboardEntry,
@@ -35,6 +36,8 @@ export function LeaderboardModal({
   onOpenChange: (open: boolean) => void
 }) {
   const userId = useGameStore((state) => state.userId)
+  const gender = useGameStore((state) => state.gender)
+  const copy = genderedCopy(gender)
   const [sort, setSort] = useState<LeaderboardSort>("xp")
   const [load, setLoad] = useState<LoadState>({ status: "loading" })
 
@@ -118,7 +121,7 @@ export function LeaderboardModal({
             {load.rows.map((row, index) => {
               const rank = index + 1
               const isYou = Boolean(userId) && row.id === userId
-              const name = row.username?.trim() || UI.anonymous.he
+              const name = row.username?.trim() || copy.anonymous
               return (
                 <li
                   key={row.id}
@@ -144,7 +147,7 @@ export function LeaderboardModal({
                     {name}
                     {isYou ? (
                       <span className="ms-2 text-xs font-normal opacity-80">
-                        {UI.you.he}
+                        {copy.you}
                       </span>
                     ) : null}
                   </span>

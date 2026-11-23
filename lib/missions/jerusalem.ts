@@ -88,15 +88,21 @@ export const JERUSALEM_MISSIONS: Mission[] = [
       {
         id: "node_3",
         speaker: "פקידה בחלון 7",
-        hebrewText: "יש דרכון ותעודת עולה? תוציא עכשיו, לא עוד שעה.",
-        englishTranslation:
-          "Do you have a passport and immigrant certificate? Take them out now, not in an hour.",
+        hebrewText: {
+          male: "יש דרכון ותעודת עולה? תוציא עכשיו, לא עוד שעה.",
+          female: "יש דרכון ותעודת עולה? תוציאי עכשיו, לא עוד שעה.",
+        },
+        englishTranslation: {
+          male: "Do you have a passport and immigrant certificate? Take (m.) them out now, not in an hour.",
+          female: "Do you have a passport and immigrant certificate? Take (f.) them out now, not in an hour.",
+        },
         wordBank: {
           יש: "do you have",
           דרכון: "passport",
           ותעודת: "and a certificate",
           עולה: "immigrant",
-          תוציא: "take out",
+          תוציא: "take out (m.)",
+          תוציאי: "take out (f.)",
           עכשיו: "now",
           לא: "not",
           עוד: "another",
@@ -222,15 +228,24 @@ export const JERUSALEM_MISSIONS: Mission[] = [
       {
         id: "node_1",
         speaker: "תושב ליד שער יפו",
-        hebrewText: "אתה מחפש משהו או רק מצלם?",
-        englishTranslation: "Are you looking for something or just taking photos?",
+        hebrewText: {
+          male: "אתה מחפש משהו או רק מצלם?",
+          female: "את מחפשת משהו או רק מצלמת?",
+        },
+        englishTranslation: {
+          male: "Are you (m.) looking for something or just taking photos?",
+          female: "Are you (f.) looking for something or just taking photos?",
+        },
         wordBank: {
-          אתה: "you",
-          מחפש: "looking for",
+          אתה: "you (m.)",
+          את: "you (f.)",
+          מחפש: "looking for (m.)",
+          מחפשת: "looking for (f.)",
           משהו: "something",
           או: "or",
           רק: "just",
-          מצלם: "taking photos",
+          מצלם: "taking photos (m.)",
+          מצלמת: "taking photos (f.)",
         },
         options: [
           {
@@ -246,8 +261,14 @@ export const JERUSALEM_MISSIONS: Mission[] = [
             feedback: "There is no beach in Jerusalem. There is stone.",
           },
           {
-            text: "אני מחפש את דיזנגוף",
-            englishTranslation: "I am looking for Dizengoff",
+            text: {
+              male: "אני מחפש את דיזנגוף",
+              female: "אני מחפשת את דיזנגוף",
+            },
+            englishTranslation: {
+              male: "I am looking (m.) for Dizengoff",
+              female: "I am looking (f.) for Dizengoff",
+            },
             isCorrect: false,
             feedback: "Dizengoff is in Tel Aviv. This is Jaffa Gate.",
           },

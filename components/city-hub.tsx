@@ -18,9 +18,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { missionsByChapter } from "@/lib/chapters"
 import { cityHintLines, type CityInfo } from "@/lib/cities"
 import { HUD_HINTS, UI } from "@/lib/copy"
 import { formatShekels, formatXp } from "@/lib/format"
+import { g } from "@/lib/gender"
 import { cityUnlocked, levelFromXp, requiredLevelForCity } from "@/lib/levels"
 import { missionsForCity } from "@/lib/missions"
 import { useGameStore } from "@/lib/store"
@@ -29,10 +31,12 @@ import type { Mission } from "@/lib/types"
 export function CityHub({ city }: { city: CityInfo }) {
   const xp = useGameStore((state) => state.xp)
   const completed = useGameStore((state) => state.completedMissions)
+  const gender = useGameStore((state) => state.gender)
   const level = levelFromXp(xp)
   const unlocked = cityUnlocked(city.slug, level.level)
   const required = requiredLevelForCity(city.slug)
   const missions = missionsForCity(city.slug)
+  const chapters = missionsByChapter(missions)
   const [active, setActive] = useState<Mission | null>(null)
 
   const hintLines = useMemo(
@@ -79,46 +83,58 @@ export function CityHub({ city }: { city: CityInfo }) {
         </p>
       </section>
 
-      <h2 className="font-heading text-2xl">
-        <Hinted he={UI.missions.he} en={UI.missions.en} />
-      </h2>
-      <div className="grid gap-4 md:grid-cols-3">
-        {missions.map((mission) => {
-          const done = completed.includes(mission.id)
-          const locked = mission.minLevel > level.level
-          return (
-            <Card key={mission.id}>
-              <CardHeader>
-                <CardTitle>
-                  <Hinted he={mission.title} en={mission.englishTitle} />
-                </CardTitle>
-                <CardDescription>
-                  {formatShekels(mission.shekelReward)} · {formatXp(mission.xpReward)}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  <Hinted he={mission.setupHebrew} en={mission.setupText} />
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  className="w-full"
-                  variant={done ? "secondary" : "default"}
-                  disabled={locked}
-                  onClick={() => setActive(mission)}
-                >
-                  {locked
-                    ? `${UI.locked.he} · רמה ${mission.minLevel}`
-                    : done
-                      ? UI.practice.he
-                      : UI.startMission.he}
-                </Button>
-              </CardFooter>
-            </Card>
-          )
-        })}
-      </div>
+      {chapters.map((chapter) => (
+        <section key={chapter.id} className="space-y-3">
+          <div>
+            <h2 className="font-heading text-2xl">
+              <Hinted he={chapter.titleHe} en={chapter.titleEn} />
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              <Hinted he={chapter.blurbHe} en={chapter.blurbEn} />
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {chapter.missions.map((mission) => {
+              const done = completed.includes(mission.id)
+              const locked = mission.minLevel > level.level
+              return (
+                <Card key={mission.id} data-testid={`mission-${mission.id}`}>
+                  <CardHeader>
+                    <CardTitle>
+                      <Hinted he={mission.title} en={mission.englishTitle} />
+                    </CardTitle>
+                    <CardDescription>
+                      {formatShekels(mission.shekelReward)} · {formatXp(mission.xpReward)}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      <Hinted
+                        he={g(mission.setupHebrew, gender)}
+                        en={g(mission.setupText, gender)}
+                      />
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button
+                      className="w-full"
+                      variant={done ? "secondary" : "default"}
+                      disabled={locked}
+                      onClick={() => setActive(mission)}
+                    >
+                      {locked
+                        ? `${UI.locked.he} · רמה ${mission.minLevel}`
+                        : done
+                          ? UI.practice.he
+                          : UI.startMission.he}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              )
+            })}
+          </div>
+        </section>
+      ))}
 
       <MissionModal
         mission={active}

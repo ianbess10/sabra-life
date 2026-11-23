@@ -22,6 +22,7 @@ import {
 
 import { useAuth } from "@/components/auth-provider"
 import { CloudStatus } from "@/components/cloud-status"
+import { GenderPicker } from "@/components/gender-picker"
 import { LeaderboardModal } from "@/components/leaderboard-modal"
 import { useHint } from "@/components/hint-provider"
 import { Badge } from "@/components/ui/badge"
@@ -152,6 +153,7 @@ export function Hud() {
             {currentStreak}
           </span>
           <CloudStatus />
+          <GenderPicker compact />
           <Button
             variant="outline"
             size="sm"

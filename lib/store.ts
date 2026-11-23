@@ -14,6 +14,7 @@ import {
   saveCloudProgress,
   type CloudProgress,
 } from "@/lib/cloud"
+import type { Gender } from "@/lib/gender"
 import { HINT_COST, MISTAKE_PENALTY, levelFromXp } from "@/lib/levels"
 import { getMission } from "@/lib/missions"
 import { STREAK_BONUS_SHEKELS, calculateStreak } from "@/lib/streak"
@@ -37,8 +38,10 @@ export type GameState = {
   userId: string | null
   sawWelcome: boolean
   welcomeOpen: boolean
+  gender: Gender
   showWelcome: () => void
   dismissWelcome: () => void
+  setGender: (gender: Gender) => void
   spend: (amount: number) => boolean
   buyHint: () => boolean
   penalizeMistake: () => number
@@ -90,6 +93,7 @@ const initialState = {
   lastMissionDate: null as string | null,
   syncStatus: "idle" as SyncStatus,
   sawWelcome: false,
+  gender: "male" as Gender,
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null
@@ -128,6 +132,7 @@ export const useGameStore = create<GameState>()(
       welcomeOpen: false,
       showWelcome: () => set({ welcomeOpen: true }),
       dismissWelcome: () => set({ sawWelcome: true, welcomeOpen: false }),
+      setGender: (gender) => set({ gender }),
       spend: (amount) => {
         if (amount <= 0) return true
         if (get().shekels < amount) return false
@@ -256,6 +261,7 @@ export const useGameStore = create<GameState>()(
       reset: () => {
         set({
           ...initialState,
+          gender: get().gender,
           inventory: { ...initialInventory },
           welcomeOpen: true,
         })
@@ -326,6 +332,7 @@ export const useGameStore = create<GameState>()(
         longestStreak: state.longestStreak,
         lastMissionDate: state.lastMissionDate,
         sawWelcome: state.sawWelcome,
+        gender: state.gender,
       }),
     }
   )

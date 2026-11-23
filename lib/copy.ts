@@ -3,8 +3,8 @@ import type { HintLine } from "@/lib/types"
 export const UI = {
   appName: { he: "סברה לייף", en: "Sabra Life" },
   tagline: {
-    he: "עולה חדש. ישראל. בלי אנגלית בחינם.",
-    en: "New immigrant. Israel. No free English.",
+    he: "מבחן העולה. מנתב״ג עד הפארק. בלי אנגלית בחינם.",
+    en: "The oleh test. From Ben Gurion to the park. No free English.",
   },
   navHome: { he: "בית", en: "Home" },
   navMap: { he: "מפה", en: "Map" },
@@ -62,9 +62,12 @@ export const UI = {
   shopStatus: { he: "סטטוס", en: "Status" },
   welcomeTitle: { he: "ברוך הבא לארץ", en: "Welcome to the country" },
   welcomeBody: {
-    he: "אתה עולה חדש בתל אביב. משימות בעברית, שקלים בכיס, וחיים שאפשר לשדרג ביד2. זה לא אפליקציית כרטיסיות.",
-    en: "You are a new immigrant in Tel Aviv. Missions in Hebrew, shekels in the bank, and a life you upgrade on Yad2. This is not a flashcard app.",
+    he: "בחר פרופיל — גבר או אישה — ואז תנחת בנתב״ג. שש משימות נהיגה כמו בסרט, חשבון בנק, רישיון, אולפן, סופר, וחברים בפארק. עברית מגדרית אמיתית. זה לא אפליקציית כרטיסיות.",
+    en: "Pick a profile — man or woman — then land at Ben Gurion. Six driving missions like the trainer film, a bank account, a license, ulpan, groceries, and friends in the park. Real gendered Hebrew. This is not a flashcard app.",
   },
+  profile: { he: "פרופיל", en: "Profile" },
+  olehTest: { he: "מבחן העולה", en: "The Oleh Test" },
+  phrase: { he: "ביטוי", en: "Phrase" },
   howToPlay: { he: "מדריך", en: "How to play" },
   welcomeCta: { he: "יאללה, בהצלחה", en: "Yalla, good luck" },
   inventoryTitle: { he: "הרכוש שלך", en: "Your stuff" },
@@ -140,4 +143,6 @@ export const HUD_HINTS: HintLine[] = [
   asHint(UI.howToPlay),
   asHint(UI.streak),
   asHint(UI.listen),
+  asHint(UI.profile),
+  asHint(UI.olehTest),
 ]

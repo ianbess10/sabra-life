@@ -2,27 +2,28 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
-import { CheckCircle2, UserRound, Volume2 } from "lucide-react"
+import { CheckCircle2, Volume2, XIcon } from "lucide-react"
 
-import { Hinted } from "@/components/hinted"
+import { CinematicScene, sceneMeta } from "@/components/cinematic-scene"
 import { InteractiveHebrewText } from "@/components/interactive-hebrew-text"
-import { useHebrewTTS } from "@/hooks/useHebrewTTS"
-import { useHint } from "@/components/hint-provider"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { useHint } from "@/components/hint-provider"
+import { useHebrewTTS } from "@/hooks/useHebrewTTS"
 import { UI } from "@/lib/copy"
 import { formatShekels, formatXp } from "@/lib/format"
+import { g } from "@/lib/gender"
 import { MISTAKE_PENALTY } from "@/lib/levels"
 import { STREAK_BONUS_SHEKELS } from "@/lib/streak"
 import { useGameStore } from "@/lib/store"
 import type { HintLine, Mission, MissionOption } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
 export function MissionModal({
   mission,
@@ -65,10 +66,20 @@ function MissionSession({
   const completeMission = useGameStore((state) => state.completeMission)
   const penalizeMistake = useGameStore((state) => state.penalizeMistake)
   const completed = useGameStore((state) => state.completedMissions)
+  const gender = useGameStore((state) => state.gender)
   const { speak, isPlaying, stop } = useHebrewTTS()
   const { setOverlay } = useHint()
 
-  const node = mission.nodes.find((item) => item.id === currentNodeId)
+  const nodeIndex = mission.nodes.findIndex((item) => item.id === currentNodeId)
+  const node = nodeIndex >= 0 ? mission.nodes[nodeIndex] : undefined
+  const phraseTotal = mission.nodes.length
+  const phraseNumber = Math.max(1, nodeIndex + 1)
+  const scene = sceneMeta(mission.scene)
+  const hebrew = node ? g(node.hebrewText, gender) : ""
+  const english = node ? g(node.englishTranslation, gender) : ""
+  const speaker = node ? g(node.speaker, gender) : ""
+  const setupHe = g(mission.setupHebrew, gender)
+
   const overlayId = `${mission.id}:${celebrating ? "success" : currentNodeId}`
   const overlayLines = useMemo<HintLine[]>(() => {
     if (celebrating) {
@@ -79,19 +90,26 @@ function MissionSession({
     }
     if (!node) return []
     return [
-      { he: node.speaker, en: node.speaker },
-      { he: node.hebrewText, en: node.englishTranslation },
+      { he: speaker, en: speaker },
+      { he: hebrew, en: english },
       ...node.options.map((option) => ({
-        he: option.text,
-        en: option.englishTranslation,
+        he: g(option.text, gender),
+        en: g(option.englishTranslation, gender),
       })),
     ]
-  }, [celebrating, mission.englishTitle, mission.title, node])
+  }, [celebrating, english, gender, hebrew, mission.englishTitle, mission.title, node, speaker])
 
   useEffect(() => {
     setOverlay(overlayId, overlayLines)
     return () => setOverlay(null, null)
   }, [overlayId, overlayLines, setOverlay])
+
+  useEffect(() => {
+    if (celebrating || !hebrew) return
+    void speak(hebrew)
+    // Auto-play each phrase like the driving trainer video.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentNodeId, celebrating])
 
   const alreadyDone = completed.includes(mission.id)
 
@@ -101,7 +119,7 @@ function MissionSession({
       const deducted = penalizeMistake()
       toast.error(
         <span dir="ltr" className="block text-start">
-          {option.feedback ?? UI.wrong.en}
+          {g(option.feedback, gender) || UI.wrong.en}
         </span>,
         {
           description: deducted > 0 ? `−${formatShekels(deducted)}` : undefined,
@@ -141,93 +159,113 @@ function MissionSession({
   }
 
   return (
-    <DialogContent
-      className="max-h-[90vh] overflow-y-auto sm:max-w-lg"
-      dir="rtl"
-      showCloseButton={!celebrating}
-    >
-      <DialogHeader>
-        <DialogTitle className="font-heading text-xl">
-          <Hinted he={mission.title} en={mission.englishTitle} />
-        </DialogTitle>
-        <DialogDescription>
-          <Hinted he={mission.setupHebrew} en={mission.setupText} />
-        </DialogDescription>
+    <DialogContent variant="cinematic" dir="rtl" showCloseButton={false}>
+      <DialogHeader className="sr-only">
+        <DialogTitle>{mission.title}</DialogTitle>
+        <DialogDescription>{setupHe}</DialogDescription>
       </DialogHeader>
 
-      {celebrating ? (
-        <div className="flex flex-col items-center gap-3 rounded-xl bg-primary/15 p-6 text-center animate-in zoom-in-95 fade-in duration-300">
-          <CheckCircle2 className="size-14 text-primary animate-in zoom-in-50 duration-500" />
-          <p className="font-heading text-2xl" data-testid="mission-success">
-            {UI.missionComplete.he}
-          </p>
-          {payout?.paid ? (
-            <p className="text-sm text-muted-foreground">
-              +{formatShekels(payout.shekels)} · +{formatXp(payout.xp)}
-            </p>
-          ) : (
-            <p className="text-sm text-muted-foreground">{UI.practiceDone.he}</p>
-          )}
-          {payout?.bonus ? (
-            <p className="text-sm text-orange-500">
-              {UI.streakBonus.he} · {payout.streak} · +{formatShekels(STREAK_BONUS_SHEKELS)}
-            </p>
-          ) : null}
-        </div>
-      ) : node ? (
-        <div className="space-y-4">
-          <div className="flex items-start gap-3 rounded-xl bg-secondary/60 p-4">
-            <UserRound className="mt-0.5 size-4 shrink-0 text-primary" />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <div className="text-xs text-muted-foreground">{node.speaker}</div>
-                <button
-                  type="button"
-                  className="inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-border/80 bg-background/40 text-muted-foreground transition-colors hover:text-primary focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                  onClick={() => void speak(node.hebrewText)}
-                  aria-label={UI.listen.he}
-                  aria-pressed={isPlaying}
-                  title={UI.listen.he}
-                  data-testid="mission-tts"
-                >
-                  <Volume2 className={isPlaying ? "size-4 text-primary" : "size-4"} />
-                </button>
-              </div>
-              <p className="mt-8 font-heading text-2xl font-medium leading-relaxed">
-                <InteractiveHebrewText
-                  key={node.id}
-                  text={node.hebrewText}
-                  wordBank={node.wordBank}
-                />
+      <CinematicScene scene={mission.scene} showChrome={false} className="h-full min-h-0 flex-1">
+        <div className="relative z-10 flex h-full min-h-0 flex-col">
+          <div className="flex items-start justify-between gap-3 px-5 pt-5 md:px-8 md:pt-7">
+            <div className="min-w-0 flex-1 pe-2">
+              <p className="text-[0.7rem] tracking-[0.28em] text-white/55 uppercase">
+                {scene.labelHe} · {mission.npcName ?? speaker}
               </p>
-              <p className="mt-1 text-[0.7rem] text-muted-foreground">{UI.wordHint.he}</p>
+              <h2 className="mt-1 font-heading text-xl text-white md:text-2xl">
+                {mission.title}
+              </h2>
+              <p className="mt-1 max-w-xl text-xs text-white/65">{setupHe}</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <p className="whitespace-nowrap rounded-full border border-white/20 bg-black/30 px-3 py-1 text-sm tabular-nums text-white/80">
+                {UI.phrase.he} {phraseNumber}/{phraseTotal}
+              </p>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="text-white hover:bg-white/15 hover:text-white"
+                onClick={onClose}
+                aria-label={UI.close.he}
+              >
+                <XIcon />
+              </Button>
             </div>
           </div>
 
-          <div className="grid gap-2">
-            {node.options.map((option) => (
-              <Button
-                key={option.text}
-                variant="outline"
-                className="h-auto min-h-10 justify-start whitespace-normal py-2 text-start"
-                onClick={() => pickOption(option)}
-              >
-                <Hinted he={option.text} en={option.englishTranslation} />
-              </Button>
-            ))}
-          </div>
+          {celebrating ? (
+            <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+              <CheckCircle2 className="size-16 text-emerald-300 animate-in zoom-in-50 duration-500" />
+              <p className="font-heading text-4xl text-white md:text-5xl" data-testid="mission-success">
+                {UI.missionComplete.he}
+              </p>
+              {payout?.paid ? (
+                <p className="text-white/80">
+                  +{formatShekels(payout.shekels)} · +{formatXp(payout.xp)}
+                </p>
+              ) : (
+                <p className="text-white/70">{UI.practiceDone.he}</p>
+              )}
+              {payout?.bonus ? (
+                <p className="text-orange-500">
+                  {UI.streakBonus.he} · {payout.streak} · +{formatShekels(STREAK_BONUS_SHEKELS)}
+                </p>
+              ) : null}
+            </div>
+          ) : node ? (
+            <>
+              <div className="flex min-h-0 flex-1 flex-col justify-center px-5 py-6 md:px-12">
+                <div className="flex items-center gap-3">
+                  <p className="text-sm text-white/60">{speaker}</p>
+                  <button
+                    type="button"
+                    className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition-colors hover:bg-white/20 focus-visible:ring-3 focus-visible:ring-white/40"
+                    onClick={() => void speak(hebrew)}
+                    aria-label={UI.listen.he}
+                    aria-pressed={isPlaying}
+                    title={UI.listen.he}
+                    data-testid="mission-tts"
+                  >
+                    <Volume2 className={cn("size-5", isPlaying && "text-amber-300")} />
+                  </button>
+                </div>
+                <p className="mt-6 font-heading text-3xl font-medium leading-relaxed text-white md:text-5xl">
+                  <InteractiveHebrewText
+                    key={`${node.id}-${gender}`}
+                    text={hebrew}
+                    wordBank={node.wordBank}
+                  />
+                </p>
+                <p className="mt-3 text-[0.7rem] text-white/50">{UI.wordHint.he}</p>
+              </div>
 
-          {alreadyDone ? (
-            <p className="text-center text-xs text-muted-foreground">{UI.practice.he}</p>
-          ) : (
-            <p className="text-center text-xs text-muted-foreground">
-              טעות עולה {formatShekels(MISTAKE_PENALTY)}
-            </p>
-          )}
+              <div className="space-y-2 px-4 pb-6 md:px-10">
+                {node.options.map((option, index) => {
+                  const label = g(option.text, gender)
+                  const latin = /[A-Za-z]/.test(label)
+                  return (
+                    <Button
+                      key={`${label}-${index}`}
+                      variant="outline"
+                      dir={latin ? "ltr" : "rtl"}
+                      className="h-auto min-h-12 w-full justify-start whitespace-normal rounded-2xl border-white/25 bg-white/10 py-3 text-start text-base text-white hover:bg-white/20 hover:text-white md:text-lg"
+                      onClick={() => pickOption(option)}
+                    >
+                      {label}
+                    </Button>
+                  )
+                })}
+                <p className="pt-1 text-center text-xs text-white/45">
+                  {alreadyDone
+                    ? UI.practice.he
+                    : `טעות עולה ${formatShekels(MISTAKE_PENALTY)}`}
+                </p>
+              </div>
+            </>
+          ) : null}
         </div>
-      ) : null}
-
-      <DialogFooter className="sr-only">{UI.close.he}</DialogFooter>
+      </CinematicScene>
     </DialogContent>
   )
 }

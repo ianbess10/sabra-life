@@ -12,6 +12,10 @@ export const WELCOME = {
     "This isn't a flashcard app. You are an oleh chadash landing in Tel Aviv with ₪200 in עו״ש and no address. Missions, the map, and Yad2 are in Hebrew. English costs shekels.",
   sections: [
     {
+      title: "Your profile",
+      body: "Choose man or woman before you land. Hebrew marks gender on almost every verb: אתה/את, צריך/צריכה, משלם/משלמת. Switch any time in the HUD.",
+    },
+    {
       title: "The HUD",
       items: [
         "רמה (level / XP) decides which cities and missions you can reach. Jerusalem opens at Ulpan Bet (level 2). Raanana opens at Ulpan Dalet (level 4).",
@@ -20,8 +24,12 @@ export const WELCOME = {
       ],
     },
     {
+      title: "The Oleh Test",
+      body: "Seventeen missions from Ben Gurion to a picnic in the park. The six driving scenes copy the Hebrew №1 trainer: rent a car, fill 95, ask for the beach, pay blue-and-white parking, survive a speed trap, exchange insurance details. Eighteen phrases on the road. No English behind the wheel.",
+    },
+    {
       title: "Missions",
-      body: "Start in Tel Aviv — café, shuk, transit. Read the scene and pick the Hebrew line. The right path pays XP and shekels. Replay is practice: no second payout.",
+      body: "Land, papers, wheels, daily life, friends. Read the scene, hear the line, pick the Hebrew reply. The right path pays XP and shekels. Replay is practice: no second payout.",
     },
     {
       title: "Hints and audio",

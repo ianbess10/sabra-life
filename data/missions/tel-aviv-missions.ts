@@ -13,12 +13,19 @@ export const telAvivMissions: MissionScript[] = [
       {
         id: "node_1",
         speaker: "מלצר (Waiter)",
-        hebrewText: "שלום, מה תרצה להזמין?",
-        englishTranslation: "Hello, what would you like to order?",
+        hebrewText: {
+          male: "שלום, מה תרצה להזמין?",
+          female: "שלום, מה תרצי להזמין?",
+        },
+        englishTranslation: {
+          male: "Hello, what would you (m.) like to order?",
+          female: "Hello, what would you (f.) like to order?",
+        },
         wordBank: {
           שלום: "hello",
           מה: "what",
-          תרצה: "would you like",
+          תרצה: "would you like (m.)",
+          תרצי: "would you like (f.)",
           להזמין: "to order",
         },
         options: [
@@ -29,8 +36,14 @@ export const telAvivMissions: MissionScript[] = [
             nextNode: "node_2",
           },
           {
-            text: "אני אוהב חתולים.",
-            englishTranslation: "I like cats.",
+            text: {
+              male: "אני אוהב חתולים.",
+              female: "אני אוהבת חתולים.",
+            },
+            englishTranslation: {
+              male: "I like cats (m.).",
+              female: "I like cats (f.).",
+            },
             isCorrect: false,
             feedback: "The waiter looks confused. Try again.",
           },
@@ -92,8 +105,14 @@ export const telAvivMissions: MissionScript[] = [
             nextNode: "success",
           },
           {
-            text: "אני לא משלם.",
-            englishTranslation: "I am not paying.",
+            text: {
+              male: "אני לא משלם.",
+              female: "אני לא משלמת.",
+            },
+            englishTranslation: {
+              male: "I am not paying (m.).",
+              female: "I am not paying (f.).",
+            },
             isCorrect: false,
             feedback: "Security is being called. Pay the waiter.",
           },
@@ -113,8 +132,14 @@ export const telAvivMissions: MissionScript[] = [
       {
         id: "node_1",
         speaker: "מוכר (Vendor)",
-        hebrewText: "עגבניות הכי טובות בשוק! רק עשרה שקלים לקילו! בוא, אחי!",
-        englishTranslation: "Best tomatoes in the market! Only ten shekels a kilo! Come, brother!",
+        hebrewText: {
+          male: "עגבניות הכי טובות בשוק! רק עשרה שקלים לקילו! בוא, אחי!",
+          female: "עגבניות הכי טובות בשוק! רק עשרה שקלים לקילו! בואי, אחותי!",
+        },
+        englishTranslation: {
+          male: "Best tomatoes in the market! Only ten shekels a kilo! Come, brother!",
+          female: "Best tomatoes in the market! Only ten shekels a kilo! Come, sister!",
+        },
         wordBank: {
           עגבניות: "tomatoes",
           הכי: "the most",
@@ -152,8 +177,14 @@ export const telAvivMissions: MissionScript[] = [
       {
         id: "node_2",
         speaker: "מוכר (Vendor)",
-        hebrewText: "בבקשה. תרצה גם מלפפונים? יש מבצע היום.",
-        englishTranslation: "Here you go. Would you like cucumbers too? There is a sale today.",
+        hebrewText: {
+          male: "בבקשה. תרצה גם מלפפונים? יש מבצע היום.",
+          female: "בבקשה. תרצי גם מלפפונים? יש מבצע היום.",
+        },
+        englishTranslation: {
+          male: "Here you go. Would you (m.) like cucumbers too? There is a sale today.",
+          female: "Here you go. Would you (f.) like cucumbers too? There is a sale today.",
+        },
         wordBank: {
           בבקשה: "here you go / please",
           תרצה: "would you like",

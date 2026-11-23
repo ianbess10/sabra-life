@@ -68,10 +68,8 @@ export async function getGameState(page) {
 
 export async function openCafeMission(page) {
   await page
-    .locator("div")
-    .filter({ hasText: /^בית קפה ברוטשילד/ })
+    .getByTestId("mission-ta_cafe_01")
     .getByRole("button", { name: /התחל משימה|תרגול/ })
-    .first()
     .click()
   await expect(page.getByText("שלום, מה תרצה להזמין?")).toBeVisible()
 }

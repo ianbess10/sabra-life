@@ -28,6 +28,7 @@ import {
 import { CITIES, cityHintLines } from "@/lib/cities"
 import { HUD_HINTS, UI, asHint } from "@/lib/copy"
 import { formatShekels } from "@/lib/format"
+import { genderedCopy } from "@/lib/gender"
 import { cityUnlocked, levelFromXp, requiredLevelForCity } from "@/lib/levels"
 import { useGameStore } from "@/lib/store"
 import { canTravelTo, travelNote } from "@/lib/travel"
@@ -40,6 +41,8 @@ export function MapView() {
   const inventory = useGameStore((state) => state.inventory)
   const shekels = useGameStore((state) => state.shekels)
   const travelTo = useGameStore((state) => state.travelTo)
+  const gender = useGameStore((state) => state.gender)
+  const copy = genderedCopy(gender)
   const level = levelFromXp(xp)
   const note = useMemo(() => travelNote(inventory.vehicle), [inventory.vehicle])
   const [pending, setPending] = useState<CityInfo | null>(null)
@@ -125,7 +128,7 @@ export function MapView() {
                   {here ? (
                     <Badge>
                       <MapPin data-icon="inline-start" />
-                      {UI.youAreHere.he}
+                      {copy.youAreHere}
                     </Badge>
                   ) : null}
                   {!unlocked ? (

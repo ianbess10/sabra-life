@@ -1,4 +1,30 @@
+import type { GenderedText } from "@/lib/gender"
+
+export type { Gender, GenderedText } from "@/lib/gender"
+
 export type CitySlug = "tel-aviv" | "jerusalem" | "raanana"
+
+export type MissionChapter = "landing" | "papers" | "wheels" | "daily" | "friends"
+
+export type MissionScene =
+  | "airport"
+  | "taxi"
+  | "bank"
+  | "clinic"
+  | "office"
+  | "ulpan"
+  | "grocery"
+  | "park"
+  | "rental"
+  | "fuel"
+  | "road"
+  | "parking"
+  | "police"
+  | "crash"
+  | "cafe"
+  | "shuk"
+  | "bus"
+  | "beach"
 
 export type VehicleId = "rav-kav" | "korkinet" | "mazda" | "tesla"
 export type PropertyId = "hostel" | "ta-share" | "jer-stone" | "raanana-villa"
@@ -27,20 +53,20 @@ export type CatalogItem = {
 }
 
 export type MissionOption = {
-  text: string
-  englishTranslation: string
+  text: GenderedText
+  englishTranslation: GenderedText
   isCorrect: boolean
   nextNode?: string
-  feedback?: string
+  feedback?: GenderedText
 }
 
 export type WordBank = Record<string, string>
 
 export type MissionNode = {
   id: string
-  speaker: string
-  hebrewText: string
-  englishTranslation: string
+  speaker: GenderedText
+  hebrewText: GenderedText
+  englishTranslation: GenderedText
   wordBank?: WordBank
   options: MissionOption[]
 }
@@ -52,14 +78,18 @@ export type MissionScript = {
   difficulty: "Beginner" | "Intermediate" | "Advanced"
   xpReward: number
   shekelReward: number
-  setupText: string
+  setupText: GenderedText
   nodes: MissionNode[]
+  chapter?: MissionChapter
+  scene?: MissionScene
+  order?: number
+  npcName?: string
 }
 
 export type Mission = MissionScript & {
   city: CitySlug
   minLevel: number
-  setupHebrew: string
+  setupHebrew: GenderedText
 }
 
 export type HintLine = {

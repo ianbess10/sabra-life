@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { GenderPicker } from "@/components/gender-picker"
 import { UI } from "@/lib/copy"
 import { WELCOME } from "@/lib/welcome"
 import { useGameStore } from "@/lib/store"
@@ -84,6 +85,16 @@ export function WelcomeModal() {
           <p>
             <MixedText text={WELCOME.intro} />
           </p>
+          <section className="space-y-2">
+            <h3 className="font-heading text-base text-primary">Speak as yourself</h3>
+            <p className="text-sm text-muted-foreground">
+              Pick the Hebrew that addresses you. NPCs will switch אתה/את, צריך/צריכה, משלם/משלמת
+              to match.
+            </p>
+            <div dir="rtl">
+              <GenderPicker />
+            </div>
+          </section>
           {WELCOME.sections.map((section) => (
             <section key={section.title} className="space-y-2">
               <h3 className="font-heading text-base text-primary">{section.title}</h3>
