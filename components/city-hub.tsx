@@ -90,15 +90,15 @@ export function CityHub({ city }: { city: CityInfo }) {
             <Card key={mission.id}>
               <CardHeader>
                 <CardTitle>
-                  <Hinted he={mission.titleHe} en={mission.titleEn} />
+                  <Hinted he={mission.title} en={mission.englishTitle} />
                 </CardTitle>
                 <CardDescription>
-                  {formatShekels(mission.rewardShekels)} · {formatXp(mission.rewardXp)}
+                  {formatShekels(mission.shekelReward)} · {formatXp(mission.xpReward)}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  <Hinted he={mission.summaryHe} en={mission.summaryEn} />
+                  <Hinted he={mission.setupHebrew} en={mission.setupText} />
                 </p>
               </CardContent>
               <CardFooter>

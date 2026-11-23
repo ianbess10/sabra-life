@@ -20,6 +20,7 @@ Open [http://localhost:3847](http://localhost:3847). Progress is saved in the br
 3. Hit Ulpan Bet (level 2) to unlock Jerusalem, Ulpan Dalet (level 4) for Raanana.
 4. Travel between cities costs ₪15 on public transit unless you own a Mazda or Tesla. A scooter does not leave Tel Aviv.
 5. Tap **רמז באנגלית** to reveal English for the current screen — it deducts ₪50.
+6. A wrong mission answer costs ₪5. The right line advances the dialogue tree; finishing a tree pays `xpReward` and `shekelReward`.
 
 ## Stack
 

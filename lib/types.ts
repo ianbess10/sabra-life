@@ -26,44 +26,37 @@ export type CatalogItem = {
   starter?: boolean
 }
 
-export type MissionChoice = {
-  id: string
-  textHe: string
-  textEn: string
-  correct: boolean
-  reactionHe: string
-  reactionEn: string
+export type MissionOption = {
+  text: string
+  englishTranslation: string
+  isCorrect: boolean
+  nextNode?: string
+  feedback?: string
 }
 
-export type MissionStep = {
+export type MissionNode = {
   id: string
-  npcHe: string
-  npcEn: string
-  promptHe: string
-  promptEn: string
-  type: "choice" | "type"
-  choices?: MissionChoice[]
-  acceptedAnswers?: string[]
-  typePlaceholderHe?: string
-  typePlaceholderEn?: string
-  failHe: string
-  failEn: string
+  speaker: string
+  hebrewText: string
+  englishTranslation: string
+  options: MissionOption[]
 }
 
-export type Mission = {
+export type MissionScript = {
   id: string
+  title: string
+  englishTitle: string
+  difficulty: "Beginner" | "Intermediate" | "Advanced"
+  xpReward: number
+  shekelReward: number
+  setupText: string
+  nodes: MissionNode[]
+}
+
+export type Mission = MissionScript & {
   city: CitySlug
-  titleHe: string
-  titleEn: string
-  summaryHe: string
-  summaryEn: string
   minLevel: number
-  rewardShekels: number
-  rewardXp: number
-  reducedRewardShekels: number
-  steps: MissionStep[]
-  successHe: string
-  successEn: string
+  setupHebrew: string
 }
 
 export type HintLine = {

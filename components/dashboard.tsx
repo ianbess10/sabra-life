@@ -194,10 +194,10 @@ function MissionRow({
     <div className="flex items-center justify-between gap-3 rounded-xl border border-border/80 bg-card/40 p-3">
       <div>
         <div className="font-medium">
-          <Hinted he={mission.titleHe} en={mission.titleEn} />
+          <Hinted he={mission.title} en={mission.englishTitle} />
         </div>
         <p className="text-xs text-muted-foreground">
-          <Hinted he={mission.summaryHe} en={mission.summaryEn} />
+          <Hinted he={mission.setupHebrew} en={mission.setupText} />
         </p>
       </div>
       <Button size="sm" variant={done ? "secondary" : "default"} onClick={onStart}>

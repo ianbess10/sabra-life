@@ -8,7 +8,7 @@ import {
   canPurchase,
   getCatalogItem,
 } from "@/lib/catalog"
-import { HINT_COST, levelFromXp } from "@/lib/levels"
+import { HINT_COST, MISTAKE_PENALTY, levelFromXp } from "@/lib/levels"
 import { getMission } from "@/lib/missions"
 import { canTravelTo } from "@/lib/travel"
 import type { CitySlug, Inventory } from "@/lib/types"
@@ -19,11 +19,10 @@ export type GameState = {
   location: CitySlug
   inventory: Inventory
   completedMissions: string[]
-  failedAttempts: Record<string, number>
   hasHydrated: number
   spend: (amount: number) => boolean
   buyHint: () => boolean
-  recordFail: (missionId: string) => void
+  penalizeMistake: () => number
   completeMission: (missionId: string) => {
     paid: boolean
     shekels: number
@@ -53,7 +52,6 @@ const initialState = {
   location: "tel-aviv" as CitySlug,
   inventory: initialInventory,
   completedMissions: [] as string[],
-  failedAttempts: {} as Record<string, number>,
 }
 
 export const useGameStore = create<GameState>()(
@@ -72,14 +70,10 @@ export const useGameStore = create<GameState>()(
         set({ shekels: get().shekels - HINT_COST })
         return true
       },
-      recordFail: (missionId) => {
-        const current = get().failedAttempts[missionId] ?? 0
-        set({
-          failedAttempts: {
-            ...get().failedAttempts,
-            [missionId]: current + 1,
-          },
-        })
+      penalizeMistake: () => {
+        const deducted = Math.min(MISTAKE_PENALTY, get().shekels)
+        if (deducted > 0) set({ shekels: get().shekels - deducted })
+        return deducted
       },
       completeMission: (missionId) => {
         const mission = getMission(missionId)
@@ -87,14 +81,12 @@ export const useGameStore = create<GameState>()(
         if (get().completedMissions.includes(missionId)) {
           return { paid: false, shekels: 0, xp: 0 }
         }
-        const failed = (get().failedAttempts[missionId] ?? 0) > 0
-        const reward = failed ? mission.reducedRewardShekels : mission.rewardShekels
         set({
-          shekels: get().shekels + reward,
-          xp: get().xp + mission.rewardXp,
+          shekels: get().shekels + mission.shekelReward,
+          xp: get().xp + mission.xpReward,
           completedMissions: [...get().completedMissions, missionId],
         })
-        return { paid: true, shekels: reward, xp: mission.rewardXp }
+        return { paid: true, shekels: mission.shekelReward, xp: mission.xpReward }
       },
       buyItem: (itemId) => {
         const item = getCatalogItem(itemId)
@@ -180,7 +172,6 @@ export const useGameStore = create<GameState>()(
         location: state.location,
         inventory: state.inventory,
         completedMissions: state.completedMissions,
-        failedAttempts: state.failedAttempts,
       }),
     }
   )

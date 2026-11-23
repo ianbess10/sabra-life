@@ -48,6 +48,7 @@ export const LEVELS: UlpanLevel[] = [
 
 export const HINT_COST = 50
 export const TRANSIT_FARE = 15
+export const MISTAKE_PENALTY = 5
 
 export function levelFromXp(xp: number) {
   let current = LEVELS[0]
