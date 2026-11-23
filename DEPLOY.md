@@ -1,36 +1,43 @@
 # Production deploy checklist (Vercel + Supabase)
 
-Do this after the production Supabase project exists and you have run [`supabase/migrations/0001_initial_schema.sql`](supabase/migrations/0001_initial_schema.sql) in its SQL Editor.
+**Live:** [https://sabra-life.vercel.app](https://sabra-life.vercel.app)  
+**Team aliases:** [https://sabra-life-ianbess-projects.vercel.app](https://sabra-life-ianbess-projects.vercel.app)  
+**Dashboard:** [vercel.com/ianbess-projects/sabra-life](https://vercel.com/ianbess-projects/sabra-life)
 
-1. **Push the code to a GitHub repository.**  
-   Create a GitHub repo (or use the one this project already tracks), then push `main`:
+The first production build is already up. It runs fully offline in the browser (`רק במכשיר`). Cloud save, login, and the leaderboard stay off until you add a dedicated Supabase project and rebuild.
 
-   ```bash
-   git remote add origin https://github.com/<you>/<repo>.git   # skip if origin already exists
-   git push -u origin main
-   ```
+## What is already done
 
-2. **Create a Vercel project and link the repository.**  
-   In the [Vercel dashboard](https://vercel.com/new), import the GitHub repo. Framework preset: **Next.js**. Leave the build command as `next build` and the output directory as `.next`.
+- Vercel project `sabra-life` (Next.js, Node 22, public — no Vercel Authentication gate)
+- Production deployment serving the Hebrew dashboard, map, and Yad2 shop
+- App Router RTL (`lang="he"` `dir="rtl"`) and a dynamic `/auth/callback` route ready for magic links
 
-3. **Add production Supabase env vars before the first build.**  
-   Vercel → Project → **Settings → Environment Variables**. Add both for Production (and Preview if you want cloud save on preview URLs):
+This deploy was a file upload, not a Git integration. Pushes to Origin will not auto-deploy until you connect Origin (or GitHub) in the Vercel team's Git settings and link the repo.
+
+## Cloud save (do this next)
+
+1. **Create a new production Supabase project.** Do not reuse another app's keys.
+2. **Run the schema.** In that project's SQL Editor, paste and run [`supabase/migrations/0001_initial_schema.sql`](supabase/migrations/0001_initial_schema.sql).
+3. **Add env vars on Vercel**, then **redeploy** so Next.js can inline them at build time:
 
    | Name | Value |
    |---|---|
    | `NEXT_PUBLIC_SUPABASE_URL` | Project URL from Supabase **Project Settings → API** |
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `anon` / publishable key from the same page |
 
-   Next.js inlines `NEXT_PUBLIC_*` at **build** time. Set these before you click Deploy, then rebuild if you add them later.
+   Vercel → `sabra-life` → **Settings → Environment Variables**. Target **Production** (and Preview if you want cloud save on preview URLs). After saving, **Deployments → … → Redeploy**.
 
-4. **Deploy.**  
-   Click **Deploy** in the Vercel import flow, or push to `main` if Git deployments are already connected. Confirm the production URL in the Vercel project **Domains** tab (for example `https://<project>.vercel.app`).
+4. **Point Supabase Auth at the live domain.** Authentication → URL Configuration:
 
-5. **Point Supabase Auth at the Vercel domain.**  
-   In the production Supabase dashboard: **Authentication → URL Configuration**.
+   - **Site URL:** `https://sabra-life.vercel.app`
+   - **Redirect URLs:** `https://sabra-life.vercel.app/auth/callback`
 
-   - **Site URL:** `https://<your-vercel-domain>` (the production domain from step 4).  
-     OAuth and password-reset links use this.
-   - **Redirect URLs:** add `https://<your-vercel-domain>/auth/callback` so email confirmation and magic links can return to the app.
+   If you also use the team alias, add `https://sabra-life-ianbess-projects.vercel.app/auth/callback`.
 
-   Save, then sign up once on the live site to confirm the confirmation email lands back on Vercel.
+5. Sign up once on the live site. The HUD should switch from **רק במכשיר** to **נשמר** after a successful save.
+
+## Auto-deploys on git push (optional)
+
+In the Vercel dashboard for this team: **Settings → Git**, connect **Cursor Origin** (or GitHub if you push a GitHub copy). Then link the Sabra Life repository to project `sabra-life` so `main` builds on every push.
+
+Until that link exists, a new production build has to be a dashboard redeploy or another file deployment.

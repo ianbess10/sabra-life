@@ -30,7 +30,7 @@ Existing databases that already ran the older split scripts (`setup.sql`, `leade
 
 ## Production (Vercel)
 
-Follow [`DEPLOY.md`](DEPLOY.md). Set the two `NEXT_PUBLIC_SUPABASE_*` variables in Vercel **before** the first production build, then add the Vercel domain as the Supabase Auth **Site URL**.
+Live at [https://sabra-life.vercel.app](https://sabra-life.vercel.app). Follow [`DEPLOY.md`](DEPLOY.md) to add production Supabase keys, rebuild, and point Auth at that domain. Until those keys exist, the live game still works with local progress only.
 
 Client helpers live at `utils/supabase/client.ts` and `utils/supabase/server.ts` (TypeScript equivalents of the usual `client.js` / `server.js` SSR pair).
 
