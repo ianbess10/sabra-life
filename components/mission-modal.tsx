@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
-import { CheckCircle2, UserRound } from "lucide-react"
+import { CheckCircle2, UserRound, Volume2 } from "lucide-react"
 
 import { Hinted } from "@/components/hinted"
+import { useHebrewTTS } from "@/hooks/useHebrewTTS"
 import { useHint } from "@/components/hint-provider"
 import { Button } from "@/components/ui/button"
 import {
@@ -63,6 +64,7 @@ function MissionSession({
   const completeMission = useGameStore((state) => state.completeMission)
   const penalizeMistake = useGameStore((state) => state.penalizeMistake)
   const completed = useGameStore((state) => state.completedMissions)
+  const { speak, isPlaying, stop } = useHebrewTTS()
   const { setOverlay } = useHint()
 
   const node = mission.nodes.find((item) => item.id === currentNodeId)
@@ -107,6 +109,7 @@ function MissionSession({
       return
     }
     if (option.nextNode === "success") {
+      stop()
       const result = completeMission(mission.id)
       setPayout(result)
       setCelebrating(true)
@@ -130,7 +133,10 @@ function MissionSession({
       window.setTimeout(() => onClose(), 1400)
       return
     }
-    if (option.nextNode) setCurrentNodeId(option.nextNode)
+    if (option.nextNode) {
+      stop()
+      setCurrentNodeId(option.nextNode)
+    }
   }
 
   return (
@@ -169,8 +175,20 @@ function MissionSession({
         <div className="space-y-4">
           <div className="flex items-start gap-3 rounded-xl bg-secondary/60 p-4">
             <UserRound className="mt-0.5 size-4 shrink-0 text-primary" />
-            <div className="min-w-0">
-              <div className="text-xs text-muted-foreground">{node.speaker}</div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <div className="text-xs text-muted-foreground">{node.speaker}</div>
+                <button
+                  type="button"
+                  className="inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-border/80 bg-background/40 text-muted-foreground transition-colors hover:text-primary focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  onClick={() => void speak(node.hebrewText)}
+                  aria-label={UI.listen.he}
+                  aria-pressed={isPlaying}
+                  title={UI.listen.he}
+                >
+                  <Volume2 className={isPlaying ? "size-4 text-primary" : "size-4"} />
+                </button>
+              </div>
               <p className="mt-2 font-heading text-2xl font-medium leading-relaxed">
                 <Hinted he={node.hebrewText} en={node.englishTranslation} />
               </p>

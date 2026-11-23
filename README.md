@@ -38,6 +38,7 @@ Client helpers live at `utils/supabase/client.ts` and `utils/supabase/server.ts`
 4. Travel between cities costs ₪15 on public transit unless you own a Mazda or Tesla. A scooter does not leave Tel Aviv.
 5. Tap **רמז באנגלית** to reveal English for the current screen — it deducts ₪50.
 6. A wrong mission answer costs ₪5. The right line advances the dialogue tree; finishing a tree pays `xpReward` and `shekelReward`.
+7. Tap the speaker button next to a line to hear it in Hebrew (`he-IL`, slightly slow). Audio lives in `hooks/useHebrewTTS.js` so a later cloud TTS swap does not touch the mission UI.
 
 ## Stack
 
