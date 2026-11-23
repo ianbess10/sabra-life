@@ -34,6 +34,9 @@ export async function gotoApp(page, path = "/", mockOptions = {}) {
   await page.goto(path)
   await expect(page.getByTestId("hud-shekels")).toBeVisible({ timeout: 20_000 })
   await page.waitForFunction(() => Boolean(window.__SABRA_STORE__))
+  await expect(page.getByTestId("welcome-dismiss")).toBeVisible()
+  await page.getByTestId("welcome-dismiss").click()
+  await expect(page.getByTestId("welcome-modal")).toBeHidden()
   return mock
 }
 

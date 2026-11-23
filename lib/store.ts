@@ -35,6 +35,10 @@ export type GameState = {
   hasHydrated: number
   syncStatus: SyncStatus
   userId: string | null
+  sawWelcome: boolean
+  welcomeOpen: boolean
+  showWelcome: () => void
+  dismissWelcome: () => void
   spend: (amount: number) => boolean
   buyHint: () => boolean
   penalizeMistake: () => number
@@ -85,6 +89,7 @@ const initialState = {
   longestStreak: 0,
   lastMissionDate: null as string | null,
   syncStatus: "idle" as SyncStatus,
+  sawWelcome: false,
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null
@@ -120,6 +125,9 @@ export const useGameStore = create<GameState>()(
       ...initialState,
       hasHydrated: 0,
       userId: null,
+      welcomeOpen: false,
+      showWelcome: () => set({ welcomeOpen: true }),
+      dismissWelcome: () => set({ sawWelcome: true, welcomeOpen: false }),
       spend: (amount) => {
         if (amount <= 0) return true
         if (get().shekels < amount) return false
@@ -246,7 +254,11 @@ export const useGameStore = create<GameState>()(
         }
       },
       reset: () => {
-        set({ ...initialState, inventory: { ...initialInventory } })
+        set({
+          ...initialState,
+          inventory: { ...initialInventory },
+          welcomeOpen: true,
+        })
         scheduleCloudPush()
       },
       setHydrated: () => set({ hasHydrated: 1 }),
@@ -313,6 +325,7 @@ export const useGameStore = create<GameState>()(
         currentStreak: state.currentStreak,
         longestStreak: state.longestStreak,
         lastMissionDate: state.lastMissionDate,
+        sawWelcome: state.sawWelcome,
       }),
     }
   )

@@ -7,6 +7,7 @@ import {
   Banknote,
   BedDouble,
   Bike,
+  BookOpen,
   Bus,
   Car,
   Flame,
@@ -64,6 +65,7 @@ export function Hud() {
   const lastMissionDate = useGameStore((state) => state.lastMissionDate)
   const { requestHint, revealed } = useHint()
   const { user, setLoginOpen, signOut } = useAuth()
+  const showWelcome = useGameStore((state) => state.showWelcome)
   const [leaderboardOpen, setLeaderboardOpen] = useState(false)
   const level = levelFromXp(xp)
   const city = CITIES.find((item) => item.slug === location)
@@ -150,6 +152,16 @@ export function Hud() {
             {currentStreak}
           </span>
           <CloudStatus />
+          <Button
+            variant="outline"
+            size="sm"
+            data-testid="open-welcome"
+            onClick={() => showWelcome()}
+            title={UI.howToPlay.he}
+          >
+            <BookOpen data-icon="inline-start" />
+            {UI.howToPlay.he}
+          </Button>
           <Button
             variant={leaderboardOpen ? "secondary" : "outline"}
             size="sm"

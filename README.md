@@ -36,6 +36,8 @@ Client helpers live at `utils/supabase/client.ts` and `utils/supabase/server.ts`
 
 ## How to play
 
+The first visit opens a beta briefing (English) that matches the live rules. Reopen it anytime from **מדריך** in the HUD.
+
 1. Start in Tel Aviv. Complete market, transit, and café missions.
 2. Spend shekels on Yad2: Rav-Kav, scooter, apartment, phone, dining.
 3. Hit Ulpan Bet (level 2) to unlock Jerusalem, Ulpan Dalet (level 4) for Raanana.
@@ -47,7 +49,7 @@ Client helpers live at `utils/supabase/client.ts` and `utils/supabase/server.ts`
 
 ## End-to-end tests
 
-Playwright covers auth, missions, Yad2, word hints, TTS, and daily streaks. Tests run against Chromium on `http://localhost:3000` and intercept `https://sabra-e2e.supabase.co` so they never write to a real project.
+Playwright covers auth, missions, Yad2, word hints, TTS, daily streaks, and the welcome briefing. Tests run against Chromium on `http://localhost:3000` and intercept `https://sabra-e2e.supabase.co` so they never write to a real project.
 
 ```bash
 npx playwright install --with-deps

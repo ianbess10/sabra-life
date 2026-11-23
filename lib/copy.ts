@@ -62,9 +62,11 @@ export const UI = {
   shopStatus: { he: "סטטוס", en: "Status" },
   welcomeTitle: { he: "ברוך הבא לארץ", en: "Welcome to the country" },
   welcomeBody: {
-    he: "אתה עולה חדש. כדי לשרוד, להרוויח שקלים ולשדרג את החיים — צריך לדבר עברית. רמז באנגלית עולה כסף אמיתי במשחק.",
-    en: "You are a new immigrant. To survive, earn shekels, and upgrade your life, you have to speak Hebrew. English hints cost in-game money.",
+    he: "אתה עולה חדש בתל אביב. משימות בעברית, שקלים בכיס, וחיים שאפשר לשדרג ביד2. זה לא אפליקציית כרטיסיות.",
+    en: "You are a new immigrant in Tel Aviv. Missions in Hebrew, shekels in the bank, and a life you upgrade on Yad2. This is not a flashcard app.",
   },
+  howToPlay: { he: "מדריך", en: "How to play" },
+  welcomeCta: { he: "יאללה, בהצלחה", en: "Yalla, good luck" },
   inventoryTitle: { he: "הרכוש שלך", en: "Your stuff" },
   emptyMissions: { he: "אין משימות זמינות ברמה הנוכחית.", en: "No missions at your current level." },
   signIn: { he: "כניסה", en: "Sign in" },
@@ -135,6 +137,7 @@ export const HUD_HINTS: HintLine[] = [
   asHint(UI.saving),
   asHint(UI.saved),
   asHint(UI.leaderboard),
+  asHint(UI.howToPlay),
   asHint(UI.streak),
   asHint(UI.listen),
 ]

@@ -33,6 +33,7 @@ export function Dashboard() {
   const inventory = useGameStore((state) => state.inventory)
   const completed = useGameStore((state) => state.completedMissions)
   const reset = useGameStore((state) => state.reset)
+  const showWelcome = useGameStore((state) => state.showWelcome)
   const city = CITIES.find((item) => item.slug === location)!
   const level = levelFromXp(xp)
   const next = nextAvailableMission(location, level.level, completed)
@@ -48,6 +49,7 @@ export function Dashboard() {
       ...HUD_HINTS,
       asHint(UI.welcomeTitle),
       asHint(UI.welcomeBody),
+      asHint(UI.howToPlay),
       asHint(UI.nextMission),
       asHint(UI.inventoryTitle),
       { he: city.nameHe, en: city.nameEn },
@@ -79,6 +81,9 @@ export function Dashboard() {
             <ArrowLeft data-icon="inline-start" className="rotate-180" />
             {UI.navMap.he}
           </Link>
+          <Button variant="outline" onClick={() => showWelcome()}>
+            {UI.howToPlay.he}
+          </Button>
         </div>
       </section>
 
