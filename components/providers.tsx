@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, type ReactNode } from "react"
+import { usePathname } from "next/navigation"
 
 import { AuthProvider } from "@/components/auth-provider"
 import { HintProvider } from "@/components/hint-provider"
@@ -10,10 +11,13 @@ import { WelcomeModal } from "@/components/welcome-modal"
 import { Toaster } from "@/components/ui/sonner"
 import { UI } from "@/lib/copy"
 import { useGameStore } from "@/lib/store"
+import { cn } from "@/lib/utils"
 
 export function Providers({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false)
   const setHydrated = useGameStore((state) => state.setHydrated)
+  const pathname = usePathname()
+  const streets = pathname === "/"
 
   useEffect(() => {
     void useGameStore.persist.rehydrate().then(() => {
@@ -40,8 +44,17 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
       <HintProvider>
-        <Hud />
-        <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</div>
+        <div className="flex h-svh flex-col">
+          <Hud />
+          <div
+            className={cn(
+              "flex min-h-0 flex-1 flex-col",
+              streets ? "overflow-hidden" : "mx-auto w-full max-w-6xl overflow-y-auto px-4 py-6"
+            )}
+          >
+            {children}
+          </div>
+        </div>
         <LoginModal />
         <WelcomeModal />
         <Toaster position="bottom-center" theme="dark" dir="rtl" />

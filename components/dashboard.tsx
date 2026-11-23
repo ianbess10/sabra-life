@@ -29,7 +29,13 @@ import { missionsForCity, nextAvailableMission } from "@/lib/missions"
 import { useGameStore } from "@/lib/store"
 import type { Mission } from "@/lib/types"
 
-export function Dashboard() {
+export function Dashboard({
+  embedded = false,
+  onPlayMission,
+}: {
+  embedded?: boolean
+  onPlayMission?: (mission: Mission) => void
+} = {}) {
   const shekels = useGameStore((state) => state.shekels)
   const xp = useGameStore((state) => state.xp)
   const location = useGameStore((state) => state.location)
@@ -44,6 +50,11 @@ export function Dashboard() {
   const cityMissions = missionsForCity(location)
   const chapters = missionsByChapter(cityMissions)
   const [active, setActive] = useState<Mission | null>(null)
+
+  function play(mission: Mission) {
+    if (onPlayMission) onPlayMission(mission)
+    else setActive(mission)
+  }
   const vehicle = ownedVehicleItem(inventory)
   const property = ownedPropertyItem(inventory)
   const phone = PHONES.find((item) => item.id === inventory.phone)
@@ -70,7 +81,7 @@ export function Dashboard() {
   useHintScreen("home", hintLines)
 
   return (
-    <div className="space-y-6">
+    <div className={cn("space-y-6", embedded && "pb-8")}>
       <section className="relative overflow-hidden rounded-3xl border border-border bg-linear-to-br from-teal-500/15 via-background to-amber-400/10 p-6 md:p-8">
         <p className="text-sm text-primary">{UI.tagline.he}</p>
         <h1 className="mt-2 font-heading text-4xl leading-tight md:text-5xl">
@@ -115,8 +126,8 @@ export function Dashboard() {
 
       <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
         <div className="space-y-4">
-          {next ? (
-            <NextMissionCard mission={next} gender={gender} onStart={() => setActive(next)} />
+            {next ? (
+              <NextMissionCard mission={next} gender={gender} onStart={() => play(next)} />
           ) : (
             <Card>
               <CardHeader>
@@ -158,7 +169,7 @@ export function Dashboard() {
                       mission={mission}
                       gender={gender}
                       done={completed.includes(mission.id)}
-                      onStart={() => setActive(mission)}
+                      onStart={() => play(mission)}
                     />
                   ))}
                 </CardContent>
@@ -223,13 +234,15 @@ export function Dashboard() {
         </Card>
       </div>
 
-      <MissionModal
-        mission={active}
-        open={Boolean(active)}
-        onOpenChange={(open) => {
-          if (!open) setActive(null)
-        }}
-      />
+      {onPlayMission ? null : (
+        <MissionModal
+          mission={active}
+          open={Boolean(active)}
+          onOpenChange={(open) => {
+            if (!open) setActive(null)
+          }}
+        />
+      )}
     </div>
   )
 }

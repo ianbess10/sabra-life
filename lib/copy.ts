@@ -68,6 +68,8 @@ export const UI = {
   profile: { he: "פרופיל", en: "Profile" },
   olehTest: { he: "מבחן העולה", en: "The Oleh Test" },
   phrase: { he: "ביטוי", en: "Phrase" },
+  phone: { he: "טלפון", en: "Phone" },
+  streets: { he: "הרחוב", en: "The street" },
   howToPlay: { he: "מדריך", en: "How to play" },
   welcomeCta: { he: "יאללה, בהצלחה", en: "Yalla, good luck" },
   inventoryTitle: { he: "הרכוש שלך", en: "Your stuff" },
@@ -145,4 +147,5 @@ export const HUD_HINTS: HintLine[] = [
   asHint(UI.listen),
   asHint(UI.profile),
   asHint(UI.olehTest),
+  asHint(UI.phone),
 ]

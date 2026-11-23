@@ -20,6 +20,7 @@ import { getMission } from "@/lib/missions"
 import { STREAK_BONUS_SHEKELS, calculateStreak } from "@/lib/streak"
 import { canTravelTo } from "@/lib/travel"
 import type { CitySlug, Inventory } from "@/lib/types"
+import { worldForCity } from "@/lib/world"
 import { isSupabaseConfigured } from "@/utils/supabase/env"
 
 export type SyncStatus = "idle" | "saving" | "saved" | "offline" | "error"
@@ -39,9 +40,16 @@ export type GameState = {
   sawWelcome: boolean
   welcomeOpen: boolean
   gender: Gender
+  worldX: number
+  worldY: number
+  wanted: number
+  inVehicle: boolean
   showWelcome: () => void
   dismissWelcome: () => void
   setGender: (gender: Gender) => void
+  setWorldPos: (x: number, y: number) => void
+  setWanted: (stars: number) => void
+  setInVehicle: (value: boolean) => void
   spend: (amount: number) => boolean
   buyHint: () => boolean
   penalizeMistake: () => number
@@ -94,6 +102,10 @@ const initialState = {
   syncStatus: "idle" as SyncStatus,
   sawWelcome: false,
   gender: "male" as Gender,
+  worldX: worldForCity("tel-aviv").spawn.x,
+  worldY: worldForCity("tel-aviv").spawn.y,
+  wanted: 0,
+  inVehicle: false,
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null
@@ -133,6 +145,9 @@ export const useGameStore = create<GameState>()(
       showWelcome: () => set({ welcomeOpen: true }),
       dismissWelcome: () => set({ sawWelcome: true, welcomeOpen: false }),
       setGender: (gender) => set({ gender }),
+      setWorldPos: (x, y) => set({ worldX: x, worldY: y }),
+      setWanted: (stars) => set({ wanted: Math.max(0, Math.min(5, stars)) }),
+      setInVehicle: (value) => set({ inVehicle: value }),
       spend: (amount) => {
         if (amount <= 0) return true
         if (get().shekels < amount) return false
@@ -239,10 +254,17 @@ export const useGameStore = create<GameState>()(
             messageEn: result.reasonEn,
           }
         }
+        const spawn = worldForCity(city).spawn
         if (result.cost > 0) {
-          set({ shekels: state.shekels - result.cost, location: city })
+          set({
+            shekels: state.shekels - result.cost,
+            location: city,
+            worldX: spawn.x,
+            worldY: spawn.y,
+            inVehicle: false,
+          })
         } else {
-          set({ location: city })
+          set({ location: city, worldX: spawn.x, worldY: spawn.y, inVehicle: false })
         }
         scheduleCloudPush()
         return {
@@ -333,6 +355,8 @@ export const useGameStore = create<GameState>()(
         lastMissionDate: state.lastMissionDate,
         sawWelcome: state.sawWelcome,
         gender: state.gender,
+        worldX: state.worldX,
+        worldY: state.worldY,
       }),
     }
   )

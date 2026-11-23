@@ -5,6 +5,7 @@ import { gotoApp } from "./helpers/app.js"
 test.describe("Oleh driving trainer replica", () => {
   test("rent-a-car opens the cinematic overlay with phrase 1/3", async ({ page }) => {
     await gotoApp(page, "/")
+    await page.getByTestId("gta-phone").click()
     await page
       .getByTestId("mission-ta_rent_car")
       .getByRole("button", { name: /התחל משימה|תרגול/ })

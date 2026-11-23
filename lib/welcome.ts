@@ -24,6 +24,10 @@ export const WELCOME = {
       ],
     },
     {
+      title: "The street",
+      body: "This is a GTA-style city, not a menu. WASD or the on-screen stick to walk. E talks to whoever you are standing next to. F gets in a scooter or car you bought on Yad2. P opens the phone. Bump pedestrians and the wanted stars come out — cops will chase you.",
+    },
+    {
       title: "The Oleh Test",
       body: "Seventeen missions from Ben Gurion to a picnic in the park. The six driving scenes copy the Hebrew №1 trainer: rent a car, fill 95, ask for the beach, pay blue-and-white parking, survive a speed trap, exchange insurance details. Eighteen phrases on the road. No English behind the wheel.",
     },

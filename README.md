@@ -2,7 +2,9 @@
 
 The oleh chadash test. You land at Ben Gurion with ₪200, pick a Hebrew gender profile, and talk your way through Israel. Missions are in Hebrew. The UI is in Hebrew. English costs shekels.
 
-The loop is **mission → earn shekels and XP → buy a better life on Yad2**.
+The loop is **walk the street → talk to someone → earn shekels and XP → buy a better life on Yad2**.
+
+You are a character in Tel Aviv. WASD (or the stick on a phone) to walk, **E** to talk, **F** to get in a scooter or car, **P** for the phone. Yellow blips are the next oleh mission. Bump people and wanted stars come out.
 
 ## The Oleh Test
 
@@ -54,7 +56,7 @@ Client helpers live at `utils/supabase/client.ts` and `utils/supabase/server.ts`
 
 The first visit opens a beta briefing that asks for your gender profile. Reopen it anytime from **מדריך** in the HUD.
 
-1. Land in Tel Aviv. Finish the oleh test in order, or jump into any scene.
+1. You spawn at Ben Gurion. Walk. The first NPC is passport control. Open the phone (P) to pick any mission from the oleh test.
 2. Each mission is a full-screen dialogue: a scene, a spoken Hebrew line, reply chips, phrase `n/N`.
 3. Spend shekels on Yad2: Rav-Kav, scooter, apartment, phone, dining.
 4. Hit Ulpan Bet (level 2) to unlock Jerusalem, Ulpan Dalet (level 4) for Raanana.

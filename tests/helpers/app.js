@@ -66,7 +66,15 @@ export async function getGameState(page) {
   })
 }
 
+export async function openPhone(page) {
+  const panel = page.getByTestId("gta-phone-panel")
+  if (await panel.isVisible().catch(() => false)) return
+  await page.getByTestId("gta-phone").click()
+  await expect(panel).toBeVisible()
+}
+
 export async function openCafeMission(page) {
+  await openPhone(page)
   await page
     .getByTestId("mission-ta_cafe_01")
     .getByRole("button", { name: /התחל משימה|תרגול/ })

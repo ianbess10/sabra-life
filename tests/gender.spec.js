@@ -10,6 +10,7 @@ test.describe("Hebrew gender profile", () => {
     await expect(page.getByTestId("welcome-modal")).toBeVisible()
     await page.getByTestId("gender-female").click()
     await page.getByTestId("welcome-dismiss").click()
+    await page.getByTestId("gta-phone").click()
 
     await page
       .getByTestId("mission-ta_cafe_01")

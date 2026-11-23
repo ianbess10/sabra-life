@@ -73,10 +73,18 @@ export function Hud() {
   const vehicle = ownedVehicleItem(inventory)
   const property = ownedPropertyItem(inventory)
   const canHint = shekels >= HINT_COST || revealed
+  const streets = pathname === "/"
 
   return (
     <header className="sticky top-0 z-60 border-b border-border/70 bg-[color-mix(in_oklch,var(--background)_88%,black)]/90 backdrop-blur-md">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-3 md:flex-row md:flex-wrap md:items-center md:justify-between">
+      <div
+        className={cn(
+          "mx-auto flex w-full items-center",
+          streets
+            ? "max-w-none flex-wrap gap-2 px-3 py-1.5"
+            : "max-w-6xl flex-col gap-3 px-4 py-3 md:flex-row md:flex-wrap md:justify-between"
+        )}
+      >
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
           <Link href="/" className="font-heading text-lg tracking-tight text-primary">
             {UI.appName.he}

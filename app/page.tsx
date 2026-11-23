@@ -1,5 +1,5 @@
-import { Dashboard } from "@/components/dashboard"
+import { GtaWorld } from "@/components/gta-world"
 
 export default function HomePage() {
-  return <Dashboard />
+  return <GtaWorld />
 }
