@@ -103,6 +103,7 @@ export function Hud() {
 
         <div className="grid min-w-0 grid-cols-2 gap-2 text-xs sm:grid-cols-4 sm:text-sm">
           <Stat
+            testId="hud-level"
             label={UI.level.he}
             value={`${level.level} · ${level.nameHe}`}
             extra={
@@ -115,13 +116,14 @@ export function Hud() {
             }
           />
           <Stat
+            testId="hud-shekels"
             label={UI.bank.he}
             value={formatShekels(shekels)}
             icon={<Banknote className="size-3.5 text-amber-300" />}
           />
           <Stat label={UI.location.he} value={city?.nameHe ?? location} />
           <div className="flex min-w-0 flex-wrap items-center gap-2 rounded-lg bg-secondary/70 px-2.5 py-1.5">
-            <Badge variant="outline" className="max-w-full gap-1">
+            <Badge variant="outline" className="max-w-full gap-1" data-testid="hud-vehicle">
               <VehicleIcon id={inventory.vehicle} />
               {vehicle?.nameHe ?? UI.onFoot.he}
             </Badge>
@@ -136,8 +138,10 @@ export function Hud() {
           <span
             className="inline-flex items-center gap-1 text-sm font-medium tabular-nums"
             title={`${UI.streak.he}${currentStreak ? ` · ${currentStreak}` : ""}`}
+            data-testid="hud-streak"
           >
             <Flame
+              data-testid="hud-flame"
               className={cn(
                 "size-4",
                 isMissionDayToday(lastMissionDate) ? "text-orange-500" : "text-gray-400"
@@ -158,11 +162,21 @@ export function Hud() {
             {UI.leaderboard.he}
           </Button>
           {user ? (
-            <Button variant="outline" size="sm" onClick={() => void signOut()}>
+            <Button
+              variant="outline"
+              size="sm"
+              data-testid="sign-out"
+              onClick={() => void signOut()}
+            >
               {UI.signOut.he}
             </Button>
           ) : (
-            <Button variant="outline" size="sm" onClick={() => setLoginOpen(true)}>
+            <Button
+              variant="outline"
+              size="sm"
+              data-testid="open-login"
+              onClick={() => setLoginOpen(true)}
+            >
               {UI.signIn.he}
             </Button>
           )}
@@ -189,14 +203,19 @@ function Stat({
   value,
   icon,
   extra,
+  testId,
 }: {
   label: string
   value: string
   icon?: ReactNode
   extra?: ReactNode
+  testId?: string
 }) {
   return (
-    <div className="min-w-0 rounded-lg bg-secondary/60 px-2.5 py-1.5">
+    <div
+      className="min-w-0 rounded-lg bg-secondary/60 px-2.5 py-1.5"
+      data-testid={testId}
+    >
       <div className="flex items-center gap-1 text-[0.7rem] text-muted-foreground">
         {icon}
         <span>{label}</span>

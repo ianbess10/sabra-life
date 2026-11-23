@@ -21,6 +21,11 @@ export function Providers({ children }: { children: ReactNode }) {
     })
   }, [setHydrated])
 
+  useEffect(() => {
+    if (!ready || process.env.NEXT_PUBLIC_E2E !== "1") return
+    Object.assign(window, { __SABRA_STORE__: useGameStore })
+  }, [ready])
+
   if (!ready) {
     return (
       <div className="flex min-h-svh items-center justify-center bg-background">

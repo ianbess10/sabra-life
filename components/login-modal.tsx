@@ -92,6 +92,7 @@ export function LoginModal() {
           <Button
             variant={mode === "signin" ? "default" : "outline"}
             className="flex-1"
+            data-testid="login-mode-signin"
             onClick={() => setMode("signin")}
           >
             {UI.signIn.he}
@@ -99,6 +100,7 @@ export function LoginModal() {
           <Button
             variant={mode === "signup" ? "default" : "outline"}
             className="flex-1"
+            data-testid="login-mode-signup"
             onClick={() => setMode("signup")}
           >
             {UI.signUp.he}
@@ -119,6 +121,7 @@ export function LoginModal() {
               dir="ltr"
               autoComplete="email"
               required
+              data-testid="login-email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
@@ -131,6 +134,7 @@ export function LoginModal() {
               autoComplete={mode === "signin" ? "current-password" : "new-password"}
               required
               minLength={6}
+              data-testid="login-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
             />
@@ -139,7 +143,7 @@ export function LoginModal() {
           {!configured ? (
             <p className="text-sm text-amber-200">{UI.supabaseMissing.he}</p>
           ) : null}
-          <Button type="submit" disabled={busy || !configured}>
+          <Button type="submit" disabled={busy || !configured} data-testid="login-submit">
             {busy ? UI.working.he : mode === "signin" ? UI.signIn.he : UI.signUp.he}
           </Button>
         </form>

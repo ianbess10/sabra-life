@@ -41,6 +41,17 @@ Client helpers live at `utils/supabase/client.ts` and `utils/supabase/server.ts`
 7. Tap the speaker button next to a line to hear it in Hebrew (`he-IL`, slightly slow). Audio lives in `hooks/useHebrewTTS.js` so a later cloud TTS swap does not touch the mission UI.
 8. Dashed words in a mission line cost ₪1 each and show an English gloss. The ₪50 hint still translates the whole screen.
 
+## End-to-end tests
+
+Playwright covers auth, missions, Yad2, word hints, TTS, and daily streaks. Tests run against Chromium on `http://localhost:3000` and intercept `https://sabra-e2e.supabase.co` so they never write to a real project.
+
+```bash
+npx playwright install --with-deps
+npm run test:e2e
+```
+
+The suite starts its own Next.js server on port 3000 with the mock keys in `.env.test`. It does not use the `npm run dev` server on 3847.
+
 ## Stack
 
 Next.js (App Router), Tailwind CSS, shadcn/ui, Zustand, Lucide, Supabase Auth + Postgres (optional).

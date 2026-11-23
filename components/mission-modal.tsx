@@ -158,7 +158,9 @@ function MissionSession({
       {celebrating ? (
         <div className="flex flex-col items-center gap-3 rounded-xl bg-primary/15 p-6 text-center animate-in zoom-in-95 fade-in duration-300">
           <CheckCircle2 className="size-14 text-primary animate-in zoom-in-50 duration-500" />
-          <p className="font-heading text-2xl">{UI.missionComplete.he}</p>
+          <p className="font-heading text-2xl" data-testid="mission-success">
+            {UI.missionComplete.he}
+          </p>
           {payout?.paid ? (
             <p className="text-sm text-muted-foreground">
               +{formatShekels(payout.shekels)} · +{formatXp(payout.xp)}
@@ -186,6 +188,7 @@ function MissionSession({
                   aria-label={UI.listen.he}
                   aria-pressed={isPlaying}
                   title={UI.listen.he}
+                  data-testid="mission-tts"
                 >
                   <Volume2 className={isPlaying ? "size-4 text-primary" : "size-4"} />
                 </button>

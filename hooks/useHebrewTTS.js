@@ -30,7 +30,13 @@ async function speakWithEngine(text, handlers) {
   utterance.rate = 0.9
 
   const hebrewVoice = pickHebrewVoice(voices)
-  if (hebrewVoice) utterance.voice = hebrewVoice
+  if (hebrewVoice) {
+    try {
+      utterance.voice = hebrewVoice
+    } catch {
+      // lang=he-IL still selects a Hebrew voice if the engine rejects the object
+    }
+  }
 
   utterance.onstart = () => handlers.onStart()
   utterance.onend = () => handlers.onEnd()

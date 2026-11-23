@@ -107,6 +107,7 @@ export function Yad2Shop() {
                     <Button
                       className="w-full"
                       disabled={!purchasable || poor}
+                      data-testid={`catalog-buy-${item.id}`}
                       onClick={() => buy(item)}
                     >
                       <ShoppingBag data-icon="inline-start" />

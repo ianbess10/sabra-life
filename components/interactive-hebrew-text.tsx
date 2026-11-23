@@ -96,6 +96,7 @@ export function InteractiveHebrewText({
                 }
                 aria-expanded={interactive ? open : undefined}
                 aria-describedby={open ? `${tooltipId}-${index}` : undefined}
+                data-testid={interactive ? `word-${stripWordPunctuation(word)}` : undefined}
               >
                 {word}
               </span>
@@ -116,6 +117,7 @@ export function InteractiveHebrewText({
                   role="tooltip"
                   dir="ltr"
                   className="absolute bottom-full left-1/2 z-30 mb-2.5 -translate-x-1/2 rounded-md bg-blue-100 px-2 py-1 text-xs font-normal whitespace-nowrap text-blue-950 shadow-sm"
+                  data-testid="word-hint-tooltip"
                 >
                   {gloss}
                 </span>
