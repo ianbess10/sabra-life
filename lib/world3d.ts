@@ -32,6 +32,8 @@ export type LiveWorld = {
   maggieMoving: boolean
   maggieSitting: boolean
   maggieLine: string | null
+  interior: "street" | "cafe"
+  trailer: boolean
 }
 
 export function to3(x: number, y: number, lift = 0): [number, number, number] {

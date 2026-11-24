@@ -4,14 +4,18 @@ import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } 
 import { Canvas } from "@react-three/fiber"
 import { ACESFilmicToneMapping, PCFShadowMap, SRGBColorSpace } from "three"
 import { toast } from "sonner"
-import { Smartphone, Volume2, VolumeX } from "lucide-react"
+import { Film, Smartphone, Volume2, VolumeX } from "lucide-react"
 
 import { DuskSting } from "@/components/dusk-sting"
 import { GtaPhone } from "@/components/gta-phone"
 import { GtaScene } from "@/components/gta-scene"
+import { ParkingTrailer } from "@/components/parking-trailer"
 import { StreetMission } from "@/components/street-mission"
 import { Button } from "@/components/ui/button"
 import { useStreetAudio } from "@/hooks/use-street-audio"
+import { CAFE, cafeBlocked, nearBarista, nearCafeDoor } from "@/lib/interior"
+import { hayarkonDriveLine, onHayarkonSidewalk, stallAt } from "@/lib/parking"
+import { TRAILER_DURATION, trailerProgress } from "@/lib/trailer"
 import { ownedVehicleItem } from "@/lib/catalog"
 import { UI } from "@/lib/copy"
 import { getMission, nextAvailableMission } from "@/lib/missions"
@@ -128,7 +132,8 @@ function heelMaggie(
   facing: number,
   driving: boolean,
   playerMoving: boolean,
-  dt: number
+  dt: number,
+  collide = true
 ) {
   const behind = driving ? 2 : 10
   const side = driving ? 14 : 24
@@ -137,8 +142,8 @@ function heelMaggie(
   const catchup = driving ? 10 : playerMoving ? 3.4 : 1.8
   const nx = maggie.x + (tx - maggie.x) * Math.min(1, dt * catchup)
   const ny = maggie.y + (ty - maggie.y) * Math.min(1, dt * catchup)
-  if (!blocked(map, nx, maggie.y, 8)) maggie.x = nx
-  if (!blocked(map, maggie.x, ny, 8)) maggie.y = ny
+  if (!collide || !blocked(map, nx, maggie.y, 8)) maggie.x = nx
+  if (!collide || !blocked(map, maggie.x, ny, 8)) maggie.y = ny
   maggie.moving = playerMoving && Math.hypot(tx - maggie.x, ty - maggie.y) > 3
   maggie.sitting = !playerMoving && !driving
   if (maggie.moving) maggie.facing = Math.atan2(ty - maggie.y, tx - maggie.x) || maggie.facing
@@ -201,7 +206,14 @@ export function GtaWorld() {
   const [near, setNear] = useState<Landmark | null>(null)
   const [sprint, setSprint] = useState(false)
   const [sting, setSting] = useState(true)
-  const { muted, setMuted } = useStreetAudio(!welcomeOpen && !phoneOpen)
+  const [interior, setInterior] = useState<"street" | "cafe">("street")
+  const [trailerOn, setTrailerOn] = useState(false)
+  const [trailerUi, setTrailerUi] = useState(0)
+  const { muted, setMuted } = useStreetAudio(!welcomeOpen && !phoneOpen && !trailerOn)
+  const streetHold = useRef({ x: worldX, y: worldY, facing: 0 })
+  const trailerRef = useRef(false)
+  const trailerClock = useRef(0)
+  const e2e = process.env.NEXT_PUBLIC_E2E === "1"
   const keys = useRef(new Set<string>())
   const stick = useRef<Stick>({ x: 0, y: 0 })
   const pos = useRef({ x: worldX, y: worldY })
@@ -243,6 +255,8 @@ export function GtaWorld() {
     maggieMoving: false,
     maggieSitting: false,
     maggieLine: null,
+    interior: "street",
+    trailer: false,
   })
 
   useEffect(() => {
@@ -266,15 +280,6 @@ export function GtaWorld() {
     document.documentElement.classList.add("gta-mode")
     return () => document.documentElement.classList.remove("gta-mode")
   }, [])
-
-  useEffect(() => {
-    if (welcomeOpen) {
-      setSting(true)
-      return
-    }
-    const timer = window.setTimeout(() => setSting(false), 5200)
-    return () => window.clearTimeout(timer)
-  }, [welcomeOpen])
 
   useEffect(() => {
     function down(event: KeyboardEvent) {
@@ -302,6 +307,71 @@ export function GtaWorld() {
     }
   }, [active])
 
+  const enterCafe = useCallback(
+    (atBarista = false) => {
+      if (interior !== "cafe") {
+        streetHold.current = { x: pos.current.x, y: pos.current.y, facing: facingRef.current }
+      }
+      setInterior("cafe")
+      setInVehicle(false)
+      const spot = atBarista ? CAFE.barista : CAFE.spawn
+      pos.current = { x: atBarista ? spot.x - 48 : spot.x, y: spot.y }
+      facingRef.current = 0
+      maggie.current.x = pos.current.x - 16
+      maggie.current.y = pos.current.y + 10
+      setWorldPos(pos.current.x, pos.current.y)
+    },
+    [interior, setInVehicle, setWorldPos]
+  )
+
+  const exitCafe = useCallback(() => {
+    setInterior("street")
+    pos.current = { x: streetHold.current.x, y: streetHold.current.y }
+    facingRef.current = streetHold.current.facing
+    maggie.current.x = pos.current.x - 22
+    maggie.current.y = pos.current.y + 14
+    setWorldPos(pos.current.x, pos.current.y)
+  }, [setWorldPos])
+
+  const stopTrailer = useCallback(() => {
+    trailerRef.current = false
+    trailerClock.current = 0
+    setTrailerOn(false)
+    setTrailerUi(0)
+    pos.current = { x: streetHold.current.x, y: streetHold.current.y }
+    facingRef.current = streetHold.current.facing
+    setWorldPos(pos.current.x, pos.current.y)
+    if (!vehicle || vehicle.id === "rav-kav") setInVehicle(false)
+  }, [setInVehicle, setWorldPos, vehicle])
+
+  const startTrailer = useCallback(() => {
+    if (trailerRef.current) return
+    streetHold.current = { x: pos.current.x, y: pos.current.y, facing: facingRef.current }
+    trailerClock.current = 0
+    trailerRef.current = true
+    setTrailerOn(true)
+    setTrailerUi(0)
+    setPhoneOpen(false)
+    setActive(null)
+    setInterior("street")
+    setInVehicle(true)
+    const line = hayarkonDriveLine(map)
+    pos.current = { x: line.x, y: line.y0 }
+    facingRef.current = Math.PI / 2
+  }, [map, setInVehicle])
+
+  useEffect(() => {
+    if (welcomeOpen) {
+      setSting(true)
+      return
+    }
+    const timer = window.setTimeout(() => {
+      setSting(false)
+      if (!e2e) startTrailer()
+    }, 5200)
+    return () => window.clearTimeout(timer)
+  }, [e2e, startTrailer, welcomeOpen])
+
   const playMission = useCallback(
     (mission: Mission) => {
       setPhoneOpen(false)
@@ -311,6 +381,7 @@ export function GtaWorld() {
           pos.current = { x: taxi.x, y: taxi.y }
           setWorldPos(taxi.x, taxi.y)
         }
+        setInterior("street")
         setInVehicle(true)
       }
       if (mission.id === "ta_parking") {
@@ -322,36 +393,78 @@ export function GtaWorld() {
           facingRef.current = Math.PI
           setWorldPos(x, parking.y)
         }
+        setInterior("street")
+      }
+      if (mission.id === "ta_cafe_01") {
+        enterCafe(true)
       }
       setActive(mission)
     },
-    [map, setInVehicle, setWorldPos]
+    [enterCafe, map, setInVehicle, setWorldPos]
   )
 
   const tryInteract = useCallback(() => {
+    if (trailerRef.current) return
+    if (interior === "cafe") {
+      if (nearCafeDoor(pos.current.x, pos.current.y)) {
+        exitCafe()
+        return
+      }
+      if (nearBarista(pos.current.x, pos.current.y)) {
+        const mission = getMission("ta_cafe_01")
+        if (mission) playMission(mission)
+      }
+      return
+    }
     if (paused && !taxiRide) return
     const landmark = near
     if (!landmark) return
+    if (landmark.id === "cafe") {
+      enterCafe(false)
+      return
+    }
     const mission = getMission(landmark.missionId)
     if (!mission || mission.minLevel > level) {
       toast.error("עוד לא ברמה הזו.")
       return
     }
     playMission(mission)
-  }, [level, near, paused, playMission, taxiRide])
+  }, [enterCafe, exitCafe, interior, level, near, paused, playMission, taxiRide])
 
   const tryVehicle = useCallback(() => {
+    if (trailerRef.current || interior === "cafe") return
     if (near?.id === "taxi") {
       const mission = getMission("bg_taxi")
       if (mission) playMission(mission)
       return
+    }
+    const ride = inVehicle || taxiRide
+    if (ride) {
+      const stall = stallAt(map, pos.current.x, pos.current.y)
+      if (stall?.kind === "blue") {
+        const mission = getMission("ta_parking")
+        if (mission) playMission(mission)
+        return
+      }
+      if (stall?.kind === "red") {
+        const fine = penalizeMistake()
+        useGameStore.getState().setWanted(Math.min(5, useGameStore.getState().wanted + 1))
+        toast.error(`אדום־לבן אסור. −${fine || 5}₪`)
+        return
+      }
+      if (onHayarkonSidewalk(map, pos.current.x, pos.current.y)) {
+        const fine = penalizeMistake()
+        useGameStore.getState().setWanted(Math.min(5, useGameStore.getState().wanted + 1))
+        toast.error(`על המדרכה? דו״ח. −${fine || 5}₪`)
+        return
+      }
     }
     if (!vehicle || vehicle.id === "rav-kav") {
       toast.error("אין לך רכב. יד2 מחכה — או תעמוד ליד מונית.")
       return
     }
     setInVehicle(!inVehicle)
-  }, [inVehicle, near?.id, playMission, setInVehicle, vehicle])
+  }, [inVehicle, interior, map, near?.id, penalizeMistake, playMission, setInVehicle, taxiRide, vehicle])
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -369,7 +482,40 @@ export function GtaWorld() {
     const loop = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000)
       last = now
-      if (!paused) {
+      if (trailerRef.current) {
+        trailerClock.current += dt
+        const { t, drive, veer, fail } = trailerProgress(trailerClock.current)
+        const line = hayarkonDriveLine(map)
+        pos.current.x = line.x + (line.sidewalkX - line.x) * veer
+        pos.current.y = line.y0 + (line.y1 - line.y0) * drive
+        facingRef.current = veer > 0.15 ? Math.PI : Math.PI / 2
+        moving.current = !fail
+        if (fail && useGameStore.getState().wanted < 1) {
+          useGameStore.getState().setWanted(1)
+        }
+        hudT.current += dt
+        if (hudT.current > 0.08) {
+          hudT.current = 0
+          setTrailerUi(t)
+          setSpot({
+            x: pos.current.x,
+            y: pos.current.y,
+            facing: facingRef.current,
+            maggieX: maggie.current.x,
+            maggieY: maggie.current.y,
+            maggieLine: maggie.current.line,
+          })
+        }
+        if (t >= TRAILER_DURATION) {
+          trailerRef.current = false
+          trailerClock.current = 0
+          setTrailerOn(false)
+          setTrailerUi(0)
+          pos.current = { x: streetHold.current.x, y: streetHold.current.y }
+          facingRef.current = streetHold.current.facing
+          if (!vehicle || vehicle.id === "rav-kav") setInVehicle(false)
+        }
+      } else if (!paused) {
         let ax = stick.current.x
         let ay = stick.current.y
         if (keys.current.has("w") || keys.current.has("arrowup")) ay -= 1
@@ -392,8 +538,9 @@ export function GtaWorld() {
         if (len > 0.08) {
           const nx = pos.current.x + ax * speed * dt
           const ny = pos.current.y + ay * speed * dt
-          if (!blocked(map, nx, pos.current.y)) pos.current.x = nx
-          if (!blocked(map, pos.current.x, ny)) pos.current.y = ny
+          const wall = interior === "cafe" ? cafeBlocked : (x: number, y: number) => blocked(map, x, y)
+          if (!wall(nx, pos.current.y)) pos.current.x = nx
+          if (!wall(pos.current.x, ny)) pos.current.y = ny
           facingRef.current = Math.atan2(ay, ax)
         }
         bumpT.current -= dt
@@ -476,16 +623,17 @@ export function GtaWorld() {
         pos.current.x,
         pos.current.y,
         facingRef.current,
-        Boolean(driving),
+        Boolean(driving) || trailerRef.current,
         moving.current,
-        dt
+        dt,
+        interior !== "cafe"
       )
       live.current = {
         x: pos.current.x,
         y: pos.current.y,
         facing: facingRef.current,
         moving: moving.current,
-        driving,
+        driving: Boolean(driving) || trailerRef.current,
         taxiRide: Boolean(taxiRide),
         gender,
         wanted: useGameStore.getState().wanted,
@@ -497,12 +645,14 @@ export function GtaWorld() {
         maggieMoving: maggie.current.moving,
         maggieSitting: maggie.current.sitting,
         maggieLine: maggie.current.line,
+        interior,
+        trailer: trailerRef.current,
       }
       raf = window.requestAnimationFrame(loop)
     }
     raf = window.requestAnimationFrame(loop)
     return () => window.cancelAnimationFrame(raf)
-  }, [driving, gender, map, next?.id, paused, penalizeMistake, setWorldPos, sprint, taxiRide, vehicle])
+  }, [driving, gender, interior, map, next?.id, paused, penalizeMistake, setInVehicle, setWorldPos, sprint, taxiRide, vehicle])
 
   function onMissionFinished(mission: Mission) {
     if (mission.id !== "bg_taxi") return
@@ -539,8 +689,9 @@ export function GtaWorld() {
             map={map}
             live={live}
             gender={gender}
-            driving={Boolean(driving)}
+            driving={Boolean(driving) || trailerOn}
             taxiRide={Boolean(taxiRide)}
+            interior={interior}
           />
         </Canvas>
       </div>
@@ -561,7 +712,14 @@ export function GtaWorld() {
           data-testid="gta-player"
           className="rounded-full bg-black/50 px-3 py-1 text-center text-xs text-white/90"
         >
-          {gender === "female" ? "עולה חדשה" : "עולה חדש"} · {driving ? (taxiRide ? "מונית" : vehicle?.nameHe) : "ברגל"}
+          {gender === "female" ? "עולה חדשה" : "עולה חדש"} ·{" "}
+          {interior === "cafe"
+            ? UI.inCafe.he
+            : driving || trailerOn
+              ? taxiRide
+                ? "מונית"
+                : vehicle?.nameHe ?? UI.trailer.he
+              : "ברגל"}
           {" · "}
           <span data-testid="gta-maggie">{UI.maggie.he}</span>
           {spot.maggieLine ? ` · ${spot.maggieLine}` : ""}
@@ -592,9 +750,22 @@ export function GtaWorld() {
           {muted ? <VolumeX /> : <Volume2 />}
           <span className="sr-only">{muted ? UI.unmuteStreet.he : UI.muteStreet.he}</span>
         </Button>
+        <Button
+          type="button"
+          data-testid="parking-trailer-button"
+          size="icon"
+          variant="secondary"
+          onClick={() => (trailerOn ? stopTrailer() : startTrailer())}
+          className="size-11 rounded-full bg-black/50 text-white shadow-lg hover:bg-black/70"
+          title={UI.trailer.he}
+        >
+          <Film />
+          <span className="sr-only">{UI.trailer.he}</span>
+        </Button>
       </div>
 
-      <DuskSting show={sting && !welcomeOpen && !phoneOpen && !active} />
+      <DuskSting show={sting && !welcomeOpen && !phoneOpen && !active && !trailerOn} />
+      {trailerOn ? <ParkingTrailer time={trailerUi} onSkip={stopTrailer} /> : null}
 
       <Joystick
         onMove={(x, y) => {
@@ -605,7 +776,7 @@ export function GtaWorld() {
       <div className="absolute right-3 bottom-6 z-20 flex flex-col gap-2 md:hidden">
         <Button
           data-testid="world-interact"
-          disabled={!near}
+          disabled={interior !== "cafe" && !near}
           onClick={tryInteract}
           className="h-14 w-14 rounded-full text-lg"
         >
@@ -616,13 +787,21 @@ export function GtaWorld() {
         </Button>
       </div>
 
-      {near && !phoneOpen && !active ? (
+      {interior === "cafe" && !phoneOpen && !active && !trailerOn ? (
         <Button
           data-testid="world-interact-desktop"
           className="absolute bottom-6 left-1/2 z-20 hidden -translate-x-1/2 md:inline-flex"
           onClick={tryInteract}
         >
-          E · {near.nameHe}
+          E · {nearCafeDoor(spot.x, spot.y) ? UI.exitCafe.he : UI.orderCoffee.he}
+        </Button>
+      ) : near && !phoneOpen && !active && !trailerOn ? (
+        <Button
+          data-testid="world-interact-desktop"
+          className="absolute bottom-6 left-1/2 z-20 hidden -translate-x-1/2 md:inline-flex"
+          onClick={tryInteract}
+        >
+          E · {near.id === "cafe" ? UI.enterCafe.he : near.nameHe}
         </Button>
       ) : null}
 

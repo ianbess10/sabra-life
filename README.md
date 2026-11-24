@@ -4,7 +4,7 @@ The oleh chadash test. You land at Ben Gurion with ₪200, pick a Hebrew gender 
 
 The loop is **walk the street → talk to someone → earn shekels and XP → buy a better life on Yad2**.
 
-You are a third-person character in dusk Tel Aviv. **Hayarkon** is the beach road: wet asphalt, neon, parked cars, and a blue-and-white curb. **Maggie**, a black Scottish Terrier, heels at your side (מגי on the HUD). WASD (or the stick on a phone) to walk, **E** to talk in the street, **F** to get in a scooter, a car, or the airport taxi, **P** for the phone. The speaker button turns on street radio. Yellow blips are the next oleh mission. The taxi to Rothschild is a real drive: the driver talks while you steer, and Maggie rides along. Parking on Hayarkon is a Hebrew lesson, not a sandbox. Bump people and wanted stars come out.
+You are a third-person character in dusk Tel Aviv. **Hayarkon** is the beach road: wet asphalt, neon, parked cars, and a blue-and-white curb. **Maggie**, a black Scottish Terrier, heels at your side (מגי on the HUD). WASD (or the stick on a phone) to walk, **E** to talk — at the café that is a door: you walk inside, then order at the counter. **F** gets in a Yad2 vehicle or the airport taxi; on Hayarkon it is also how you park (blue-and-white) or fail (red-and-white / sidewalk). **P** for the phone. The film button plays a 20-second trailer of a sidewalk parking fail, shot in this same city. The speaker button turns on street radio. The taxi to Rothschild is a real drive. Bump people and wanted stars come out.
 
 ## The Oleh Test
 

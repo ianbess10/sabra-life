@@ -28,6 +28,8 @@ export type ParkedCar = {
   taxi?: boolean
 }
 
+export type Stall = Rect & { kind: "blue" | "red" }
+
 export type WorldMap = {
   id: CitySlug
   w: number
@@ -41,6 +43,7 @@ export type WorldMap = {
   buildings: Building[]
   landmarks: Landmark[]
   parked: ParkedCar[]
+  stalls: Stall[]
 }
 
 export const PLAYER_R = 14
@@ -190,6 +193,7 @@ export function buildTelAviv(): WorldMap {
   ]
 
   const parked: ParkedCar[] = []
+  const stalls: Stall[] = []
   const hayarkon = vx[0]
   for (let i = 0; i < 18; i++) {
     const y = 110 + i * 108
@@ -207,15 +211,26 @@ export function buildTelAviv(): WorldMap {
     const rows = 3
     for (let c = 0; c < cols; c++) {
       for (let r = 0; r < rows; r++) {
+        const x = lot.x + 48 + c * ((lot.w - 80) / Math.max(1, cols - 1))
+        const y = lot.y + 36 + r * ((lot.h - 80) / Math.max(1, rows - 1))
+        stalls.push({ x: x - 18, y: y - 22, w: 36, h: 48, kind: "blue" })
+        if (r === 0) continue
         parked.push({
-          x: lot.x + 48 + c * ((lot.w - 80) / Math.max(1, cols - 1)),
-          y: lot.y + 36 + r * ((lot.h - 80) / Math.max(1, rows - 1)),
+          x,
+          y,
           facing: Math.PI / 2,
           color: carColors[(c * 3 + r) % carColors.length],
         })
       }
     }
   }
+  stalls.push({
+    x: hayarkon + ROAD_W + 4,
+    y: 480,
+    w: 28,
+    h: 140,
+    kind: "red",
+  })
 
   return {
     id: "tel-aviv",
@@ -230,6 +245,7 @@ export function buildTelAviv(): WorldMap {
     buildings,
     landmarks,
     parked,
+    stalls,
   }
 }
 
@@ -265,6 +281,7 @@ export function buildJerusalem(): WorldMap {
       { id: "oldcity", missionId: "jer-oldcity", nameHe: "העיר העתיקה", nameEn: "Old City", x: 480, y: 830, color: "#d6d3d1" },
     ],
     parked: [],
+    stalls: [],
   }
 }
 
@@ -292,6 +309,7 @@ export function buildRaanana(): WorldMap {
       { id: "board", missionId: "ra-boardroom", nameHe: "הנהלה", nameEn: "Boardroom", x: 460, y: 780, color: "#64748b" },
     ],
     parked: [],
+    stalls: [],
   }
 }
 

@@ -18,6 +18,7 @@ import {
   type LiveActor,
   type LiveWorld,
 } from "@/lib/world3d"
+import { CafeInterior } from "@/components/cafe-interior"
 import { Maggie } from "@/components/maggie"
 import type { Landmark, ParkedCar, WorldMap } from "@/lib/world"
 
@@ -48,40 +49,48 @@ export function GtaScene({
   gender,
   driving,
   taxiRide,
+  interior,
 }: {
   map: WorldMap
   live: MutableRefObject<LiveWorld>
   gender: "male" | "female"
   driving: boolean
   taxiRide: boolean
+  interior: "street" | "cafe"
 }) {
+  const inside = interior === "cafe"
   return (
     <>
-      <color attach="background" args={["#14081f"]} />
-      <fog attach="fog" args={["#4a2048", 55, 210]} />
-      <DuskSky />
-      <hemisphereLight args={["#ffb089", "#2a1840", 0.85]} />
-      <ambientLight intensity={0.32} />
-      <directionalLight
-        castShadow={!E2E}
-        color="#ff9a62"
-        position={[-70, 28, 24]}
-        intensity={1.85}
-        shadow-mapSize={[1024, 1024]}
-        shadow-camera-far={220}
-        shadow-camera-left={-80}
-        shadow-camera-right={80}
-        shadow-camera-top={80}
-        shadow-camera-bottom={-80}
-      />
-      <pointLight position={[-88, 20, 30]} color="#ff6a30" intensity={2.8} distance={260} />
-      <pointLight position={[20, 18, 40]} color="#c4b5fd" intensity={0.7} distance={180} />
-
-      <City map={map} />
-      <Crowd live={live} />
+      {inside ? (
+        <CafeInterior />
+      ) : (
+        <>
+          <color attach="background" args={["#14081f"]} />
+          <fog attach="fog" args={["#4a2048", 55, 210]} />
+          <DuskSky />
+          <hemisphereLight args={["#ffb089", "#2a1840", 0.85]} />
+          <ambientLight intensity={0.32} />
+          <directionalLight
+            castShadow={!E2E}
+            color="#ff9a62"
+            position={[-70, 28, 24]}
+            intensity={1.85}
+            shadow-mapSize={[1024, 1024]}
+            shadow-camera-far={220}
+            shadow-camera-left={-80}
+            shadow-camera-right={80}
+            shadow-camera-top={80}
+            shadow-camera-bottom={-80}
+          />
+          <pointLight position={[-88, 20, 30]} color="#ff6a30" intensity={2.8} distance={260} />
+          <pointLight position={[20, 18, 40]} color="#c4b5fd" intensity={0.7} distance={180} />
+          <City map={map} />
+          <Crowd live={live} />
+          <Landmarks map={map} live={live} />
+        </>
+      )}
       <Player live={live} gender={gender} driving={driving} taxiRide={taxiRide} />
       <Maggie live={live} />
-      <Landmarks map={map} live={live} />
       <FollowCamera live={live} />
     </>
   )
@@ -432,18 +441,19 @@ function FollowCamera({ live }: { live: MutableRefObject<LiveWorld> }) {
   useFrame((state, dt) => {
     const world = live.current
     const [px, , pz] = to3(world.x, world.y)
-    const back = world.driving ? 15.5 : 8.6
-    const height = world.driving ? 7.2 : 4.35
+    const cafe = world.interior === "cafe"
+    const back = cafe ? 5.6 : world.driving ? 15.5 : 8.6
+    const height = cafe ? 3.1 : world.driving ? 7.2 : 4.35
     const yaw = world.facing
-    const side = world.driving ? 0.8 : 1.55
+    const side = cafe ? 0.35 : world.driving ? 0.8 : 1.55
     CAM.set(
       px - Math.cos(yaw) * back + Math.cos(yaw + Math.PI / 2) * side,
       height,
       pz - Math.sin(yaw) * back + Math.sin(yaw + Math.PI / 2) * side
     )
-    const k = 1 - Math.exp(-dt * 4.8)
+    const k = 1 - Math.exp(-dt * (world.trailer ? 2.2 : 4.8))
     state.camera.position.lerp(CAM, k)
-    LOOK.set(px + Math.cos(yaw) * 3.6, world.driving ? 1.15 : 1.4, pz + Math.sin(yaw) * 3.6)
+    LOOK.set(px + Math.cos(yaw) * (cafe ? 2.2 : 3.6), cafe ? 1.2 : world.driving ? 1.15 : 1.4, pz + Math.sin(yaw) * (cafe ? 2.2 : 3.6))
     state.camera.lookAt(LOOK)
   })
   return null
