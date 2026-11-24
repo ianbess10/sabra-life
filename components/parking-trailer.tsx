@@ -1,22 +1,25 @@
 "use client"
 
 import { UI } from "@/lib/copy"
-import { TRAILER_DURATION, trailerCaption } from "@/lib/trailer"
+import { TRAILER_DURATION, trailerCaption, type TrailerKind } from "@/lib/trailer"
 import { Button } from "@/components/ui/button"
 
 export function ParkingTrailer({
   time,
+  kind = "ramzor",
   onSkip,
 }: {
   time: number
+  kind?: TrailerKind
   onSkip: () => void
 }) {
-  const caption = trailerCaption(time)
+  const caption = trailerCaption(time, kind)
   const left = Math.max(0, TRAILER_DURATION - time)
   return (
     <div
       className="pointer-events-none absolute inset-0 z-[35] flex flex-col justify-between px-6 py-8"
       data-testid="parking-trailer"
+      data-trailer-kind={kind}
     >
       <div className="flex items-start justify-end">
         <Button

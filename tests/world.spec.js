@@ -52,11 +52,12 @@ test.describe("GTA streets", () => {
     await expect(page.getByText(CAFE_ANSWERS.node1Prompt)).toBeVisible()
   })
 
-  test("the parking trailer is the same dusk city, skippable", async ({ page }) => {
+  test("the ramzor trailer is the same dusk city, skippable", async ({ page }) => {
     await gotoApp(page, "/")
     await page.getByTestId("parking-trailer-button").click()
     await expect(page.getByTestId("parking-trailer")).toBeVisible()
-    await expect(page.getByTestId("parking-trailer-caption")).toHaveText("רחוב הירקון. שקיעה.")
+    await expect(page.getByTestId("parking-trailer-caption")).toHaveText("רחוב הירקון. רמזור.")
+    await expect(page.getByTestId("parking-trailer")).toHaveAttribute("data-trailer-kind", "ramzor")
     await page.getByTestId("parking-trailer-skip").click()
     await expect(page.getByTestId("parking-trailer")).toHaveCount(0)
   })
@@ -73,5 +74,23 @@ test.describe("GTA streets", () => {
     await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))
     await page.keyboard.press("f")
     await expect(page.getByText(/על המדרכה\? דו״ח/)).toBeVisible()
+  })
+
+  test("running a red ramzor on Hayarkon is a Hebrew ticket", async ({ page }) => {
+    await gotoApp(page, "/")
+    await setGameState(page, {
+      inventory: { vehicle: "mazda", property: null, phone: "basic", dining: "street" },
+      inVehicle: true,
+      worldX: 285,
+      worldY: 845,
+    })
+    await expect(page.getByTestId("gta-player")).toContainText("מאזדה")
+    await page.evaluate(() => {
+      window.__SABRA_FORCE_RAMZOR__ = "red"
+    })
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))
+    await page.keyboard.down("w")
+    await expect(page.getByText(/ברמזור אדום\? דו״ח/)).toBeVisible()
+    await page.keyboard.up("w")
   })
 })

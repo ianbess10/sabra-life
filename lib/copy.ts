@@ -78,6 +78,8 @@ export const UI = {
     he: "חושבים שווייס סיטי קשוחה? פה משלמים כחול־לבן — בעברית.",
     en: "Think Vice City is tough? Here you pay blue-and-white — in Hebrew.",
   },
+  ramzor: { he: "רמזור", en: "Traffic light" },
+  redLight: { he: "ברמזור אדום? דו״ח.", en: "Red light? A ticket." },
   hayarkon: { he: "רחוב הירקון", en: "Hayarkon Street" },
   streetSound: { he: "רדיו רחוב", en: "Street radio" },
   muteStreet: { he: "השתק", en: "Mute" },

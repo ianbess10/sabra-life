@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, type MutableRefObject, type ReactNode } from "react"
 import { useFrame } from "@react-three/fiber"
-import type { Group, Mesh } from "three"
+import type { Group, Mesh, MeshStandardMaterial } from "three"
 import {
   BackSide,
   CanvasTexture,
@@ -20,6 +20,7 @@ import {
 } from "@/lib/world3d"
 import { CafeInterior } from "@/components/cafe-interior"
 import { Maggie } from "@/components/maggie"
+import { hayarkonRamzors, ramzorSignal, type Ramzor } from "@/lib/lights"
 import type { Landmark, ParkedCar, WorldMap } from "@/lib/world"
 
 const LOOK = new Vector3()
@@ -84,7 +85,7 @@ export function GtaScene({
           />
           <pointLight position={[-88, 20, 30]} color="#ff6a30" intensity={2.8} distance={260} />
           <pointLight position={[20, 18, 40]} color="#c4b5fd" intensity={0.7} distance={180} />
-          <City map={map} />
+          <City map={map} live={live} />
           <Crowd live={live} />
           <Landmarks map={map} live={live} />
         </>
@@ -133,9 +134,10 @@ function DuskSky() {
   )
 }
 
-function City({ map }: { map: WorldMap }) {
+function City({ map, live }: { map: WorldMap; live: MutableRefObject<LiveWorld> }) {
   const extent = useMemo(() => ({ w: sx(map.w), d: sx(map.h) }), [map.h, map.w])
   const hayarkon = map.roads.find((road) => road.name === "hayarkon")
+  const ramzors = useMemo(() => hayarkonRamzors(map), [map])
   const palms = useMemo(() => {
     if (!map.sand) return [] as { x: number; z: number }[]
     const list: { x: number; z: number }[] = []
@@ -273,8 +275,96 @@ function City({ map }: { map: WorldMap }) {
           <NeonSign text="רחוב הירקון" color="#fb7185" width={8.2} />
         </group>
       ) : null}
+      {ramzors.map((light) => (
+        <group key={light.id}>
+          {E2E ? null : <Crosswalk stop={light.stop} />}
+          <RamzorMesh ramzor={light} live={live} />
+        </group>
+      ))}
     </group>
   )
+}
+
+function Crosswalk({ stop }: { stop: { x: number; y: number; w: number; h: number } }) {
+  const stripes = 5
+  return (
+    <group>
+      {Array.from({ length: stripes }, (_, index) => {
+        const z = sx(stop.y + stop.h + 8 + index * 7)
+        return (
+          <mesh
+            key={index}
+            position={[sx(stop.x + stop.w / 2), 0.055, z]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <planeGeometry args={[sx(stop.w) * 0.72, sx(3.2)]} />
+            <meshStandardMaterial color="#f8fafc" emissive="#e2e8f0" emissiveIntensity={0.18} />
+          </mesh>
+        )
+      })}
+    </group>
+  )
+}
+
+function RamzorMesh({
+  ramzor,
+  live,
+}: {
+  ramzor: Ramzor
+  live: MutableRefObject<LiveWorld>
+}) {
+  const red = useRef<Mesh>(null)
+  const yellow = useRef<Mesh>(null)
+  const green = useRef<Mesh>(null)
+  const glow = useRef<Mesh>(null)
+  useFrame(() => {
+    const hold = live.current.ramzorHold
+    const signal = ramzorSignal(performance.now(), ramzor.index, hold)
+    paintBulb(red.current, signal === "red", "#ff2a2a", "#4a1010")
+    paintBulb(yellow.current, signal === "yellow", "#ffe14a", "#5a3b00")
+    paintBulb(green.current, signal === "green", "#3dff7a", "#0d3d22")
+    if (glow.current) {
+      const color = signal === "red" ? "#ff2a2a" : signal === "yellow" ? "#ffe14a" : "#3dff7a"
+      const material = glow.current.material as MeshStandardMaterial
+      material.color.set(color)
+      glow.current.position.y = signal === "red" ? 5.12 : signal === "yellow" ? 4.62 : 4.12
+    }
+  })
+  const [x, , z] = to3(ramzor.x, ramzor.y)
+  return (
+    <group position={[x, 0, z]}>
+      <mesh position={[0, 2.35, 0]}>
+        <cylinderGeometry args={[0.09, 0.12, 4.7, 6]} />
+        <meshStandardMaterial color="#1f2937" metalness={0.55} roughness={0.32} />
+      </mesh>
+      <mesh position={[-0.32, 4.62, 0]}>
+        <boxGeometry args={[0.42, 1.55, 0.5]} />
+        <meshStandardMaterial color="#e2e8f0" metalness={0.2} roughness={0.4} />
+      </mesh>
+      <mesh ref={red} position={[-0.56, 5.12, 0]}>
+        <sphereGeometry args={[0.16, 12, 12]} />
+        <meshBasicMaterial color="#4a1010" />
+      </mesh>
+      <mesh ref={yellow} position={[-0.56, 4.62, 0]}>
+        <sphereGeometry args={[0.16, 12, 12]} />
+        <meshBasicMaterial color="#5a3b00" />
+      </mesh>
+      <mesh ref={green} position={[-0.56, 4.12, 0]}>
+        <sphereGeometry args={[0.16, 12, 12]} />
+        <meshBasicMaterial color="#0d3d22" />
+      </mesh>
+      <mesh ref={glow} position={[-0.56, 5.12, 0]}>
+        <sphereGeometry args={[0.22, 10, 10]} />
+        <meshBasicMaterial color="#ff2a2a" transparent opacity={0.45} />
+      </mesh>
+    </group>
+  )
+}
+
+function paintBulb(mesh: Mesh | null, on: boolean, lit: string, dim: string) {
+  if (!mesh) return
+  const material = mesh.material as MeshStandardMaterial
+  material.color.set(on ? lit : dim)
 }
 
 function HayarkonCurb({ road }: { road: { x: number; y: number; w: number; h: number } }) {

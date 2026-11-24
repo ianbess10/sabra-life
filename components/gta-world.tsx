@@ -14,8 +14,15 @@ import { StreetMission } from "@/components/street-mission"
 import { Button } from "@/components/ui/button"
 import { useStreetAudio } from "@/hooks/use-street-audio"
 import { CAFE, cafeBlocked, nearBarista, nearCafeDoor } from "@/lib/interior"
+import {
+  hayarkonRamzors,
+  ramzorAt,
+  ramzorDriveLine,
+  ramzorSignal,
+  type Signal,
+} from "@/lib/lights"
 import { hayarkonDriveLine, onHayarkonSidewalk, stallAt } from "@/lib/parking"
-import { TRAILER_DURATION, trailerProgress } from "@/lib/trailer"
+import { TRAILER_DURATION, trailerProgress, type TrailerKind } from "@/lib/trailer"
 import { ownedVehicleItem } from "@/lib/catalog"
 import { UI } from "@/lib/copy"
 import { getMission, nextAvailableMission } from "@/lib/missions"
@@ -209,10 +216,15 @@ export function GtaWorld() {
   const [interior, setInterior] = useState<"street" | "cafe">("street")
   const [trailerOn, setTrailerOn] = useState(false)
   const [trailerUi, setTrailerUi] = useState(0)
+  const [trailerKind, setTrailerKind] = useState<TrailerKind>("ramzor")
   const { muted, setMuted } = useStreetAudio(!welcomeOpen && !phoneOpen && !trailerOn)
   const streetHold = useRef({ x: worldX, y: worldY, facing: 0 })
   const trailerRef = useRef(false)
   const trailerClock = useRef(0)
+  const trailerKindRef = useRef<TrailerKind>("ramzor")
+  const ramzorHoldRef = useRef<Signal | null>(null)
+  const ramzorFineT = useRef(0)
+  const ramzors = useMemo(() => hayarkonRamzors(map), [map])
   const e2e = process.env.NEXT_PUBLIC_E2E === "1"
   const keys = useRef(new Set<string>())
   const stick = useRef<Stick>({ x: 0, y: 0 })
@@ -257,6 +269,7 @@ export function GtaWorld() {
     maggieLine: null,
     interior: "street",
     trailer: false,
+    ramzorHold: null,
   })
 
   useEffect(() => {
@@ -334,8 +347,11 @@ export function GtaWorld() {
   }, [setWorldPos])
 
   const stopTrailer = useCallback(() => {
+    const justPlayed = trailerKindRef.current
     trailerRef.current = false
     trailerClock.current = 0
+    ramzorHoldRef.current = null
+    trailerKindRef.current = justPlayed === "ramzor" ? "parking" : "ramzor"
     setTrailerOn(false)
     setTrailerUi(0)
     pos.current = { x: streetHold.current.x, y: streetHold.current.y }
@@ -344,21 +360,27 @@ export function GtaWorld() {
     if (!vehicle || vehicle.id === "rav-kav") setInVehicle(false)
   }, [setInVehicle, setWorldPos, vehicle])
 
-  const startTrailer = useCallback(() => {
-    if (trailerRef.current) return
-    streetHold.current = { x: pos.current.x, y: pos.current.y, facing: facingRef.current }
-    trailerClock.current = 0
-    trailerRef.current = true
-    setTrailerOn(true)
-    setTrailerUi(0)
-    setPhoneOpen(false)
-    setActive(null)
-    setInterior("street")
-    setInVehicle(true)
-    const line = hayarkonDriveLine(map)
-    pos.current = { x: line.x, y: line.y0 }
-    facingRef.current = Math.PI / 2
-  }, [map, setInVehicle])
+  const startTrailer = useCallback(
+    (kind: TrailerKind = trailerKindRef.current) => {
+      if (trailerRef.current) return
+      streetHold.current = { x: pos.current.x, y: pos.current.y, facing: facingRef.current }
+      trailerClock.current = 0
+      trailerKindRef.current = kind
+      trailerRef.current = true
+      ramzorHoldRef.current = kind === "ramzor" ? "red" : null
+      setTrailerKind(kind)
+      setTrailerOn(true)
+      setTrailerUi(0)
+      setPhoneOpen(false)
+      setActive(null)
+      setInterior("street")
+      setInVehicle(true)
+      const line = kind === "parking" ? hayarkonDriveLine(map) : ramzorDriveLine(map)
+      pos.current = { x: line.x, y: line.y0 }
+      facingRef.current = Math.PI / 2
+    },
+    [map, setInVehicle]
+  )
 
   useEffect(() => {
     if (welcomeOpen) {
@@ -367,7 +389,7 @@ export function GtaWorld() {
     }
     const timer = window.setTimeout(() => {
       setSting(false)
-      if (!e2e) startTrailer()
+      if (!e2e) startTrailer("ramzor")
     }, 5200)
     return () => window.clearTimeout(timer)
   }, [e2e, startTrailer, welcomeOpen])
@@ -484,11 +506,20 @@ export function GtaWorld() {
       last = now
       if (trailerRef.current) {
         trailerClock.current += dt
-        const { t, drive, veer, fail } = trailerProgress(trailerClock.current)
-        const line = hayarkonDriveLine(map)
-        pos.current.x = line.x + (line.sidewalkX - line.x) * veer
-        pos.current.y = line.y0 + (line.y1 - line.y0) * drive
-        facingRef.current = veer > 0.15 ? Math.PI : Math.PI / 2
+        const kind = trailerKindRef.current
+        const { t, drive, veer, run, fail } = trailerProgress(trailerClock.current, kind)
+        if (kind === "parking") {
+          const line = hayarkonDriveLine(map)
+          pos.current.x = line.x + (line.sidewalkX - line.x) * veer
+          pos.current.y = line.y0 + (line.y1 - line.y0) * drive
+          facingRef.current = veer > 0.15 ? Math.PI : Math.PI / 2
+        } else {
+          const line = ramzorDriveLine(map)
+          pos.current.x = line.x
+          pos.current.y = line.y0 + (line.stopY - line.y0) * drive + (line.y1 - line.stopY) * run
+          facingRef.current = Math.PI / 2
+          ramzorHoldRef.current = "red"
+        }
         moving.current = !fail
         if (fail && useGameStore.getState().wanted < 1) {
           useGameStore.getState().setWanted(1)
@@ -507,13 +538,7 @@ export function GtaWorld() {
           })
         }
         if (t >= TRAILER_DURATION) {
-          trailerRef.current = false
-          trailerClock.current = 0
-          setTrailerOn(false)
-          setTrailerUi(0)
-          pos.current = { x: streetHold.current.x, y: streetHold.current.y }
-          facingRef.current = streetHold.current.facing
-          if (!vehicle || vehicle.id === "rav-kav") setInVehicle(false)
+          stopTrailer()
         }
       } else if (!paused) {
         let ax = stick.current.x
@@ -546,6 +571,27 @@ export function GtaWorld() {
         bumpT.current -= dt
         wantedT.current += dt
         storeT.current += dt
+        ramzorFineT.current -= dt
+        if (
+          ride &&
+          moving.current &&
+          interior === "street" &&
+          ramzorFineT.current <= 0
+        ) {
+          const hold =
+            ramzorHoldRef.current ??
+            (typeof window !== "undefined"
+              ? ((window as Window & { __SABRA_FORCE_RAMZOR__?: Signal | null }).__SABRA_FORCE_RAMZOR__ ??
+                null)
+              : null)
+          const hit = ramzorAt(ramzors, pos.current.x, pos.current.y)
+          if (hit && ramzorSignal(now, hit.index, hold) === "red") {
+            ramzorFineT.current = 2.8
+            const fine = penalizeMistake()
+            useGameStore.getState().setWanted(Math.min(5, useGameStore.getState().wanted + 1))
+            toast.error(`ברמזור אדום? דו״ח. −${fine || 5}₪`)
+          }
+        }
         for (const actor of actors.current) {
           if (actor.kind === "cop" && stars > 0) {
             const dx = pos.current.x - actor.x
@@ -647,12 +693,18 @@ export function GtaWorld() {
         maggieLine: maggie.current.line,
         interior,
         trailer: trailerRef.current,
+        ramzorHold:
+          ramzorHoldRef.current ??
+          (typeof window !== "undefined"
+            ? ((window as Window & { __SABRA_FORCE_RAMZOR__?: Signal | null }).__SABRA_FORCE_RAMZOR__ ??
+              null)
+            : null),
       }
       raf = window.requestAnimationFrame(loop)
     }
     raf = window.requestAnimationFrame(loop)
     return () => window.cancelAnimationFrame(raf)
-  }, [driving, gender, interior, map, next?.id, paused, penalizeMistake, setInVehicle, setWorldPos, sprint, taxiRide, vehicle])
+  }, [driving, gender, interior, map, next?.id, paused, penalizeMistake, ramzors, setInVehicle, setWorldPos, sprint, stopTrailer, taxiRide, vehicle])
 
   function onMissionFinished(mission: Mission) {
     if (mission.id !== "bg_taxi") return
@@ -765,7 +817,7 @@ export function GtaWorld() {
       </div>
 
       <DuskSting show={sting && !welcomeOpen && !phoneOpen && !active && !trailerOn} />
-      {trailerOn ? <ParkingTrailer time={trailerUi} onSkip={stopTrailer} /> : null}
+      {trailerOn ? <ParkingTrailer time={trailerUi} kind={trailerKind} onSkip={stopTrailer} /> : null}
 
       <Joystick
         onMove={(x, y) => {

@@ -34,6 +34,7 @@ export type LiveWorld = {
   maggieLine: string | null
   interior: "street" | "cafe"
   trailer: boolean
+  ramzorHold: "green" | "yellow" | "red" | null
 }
 
 export function to3(x: number, y: number, lift = 0): [number, number, number] {
