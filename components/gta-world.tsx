@@ -123,20 +123,25 @@ function heelMaggie(
   dt: number,
   collide = true
 ) {
-  const behind = driving ? 2 : 10
-  const side = driving ? 14 : 24
+  const behind = driving ? 2 : -10
+  const side = driving ? 12 : 16
   const tx = px - Math.cos(facing) * behind + Math.cos(facing + Math.PI / 2) * side
   const ty = py - Math.sin(facing) * behind + Math.sin(facing + Math.PI / 2) * side
-  const catchup = driving ? 10 : playerMoving ? 3.4 : 1.8
-  const nx = maggie.x + (tx - maggie.x) * Math.min(1, dt * catchup)
-  const ny = maggie.y + (ty - maggie.y) * Math.min(1, dt * catchup)
-  if (!collide || !blocked(map, nx, maggie.y, 8)) maggie.x = nx
-  if (!collide || !blocked(map, maggie.x, ny, 8)) maggie.y = ny
-  maggie.moving = playerMoving && Math.hypot(tx - maggie.x, ty - maggie.y) > 3
-  maggie.sitting = !playerMoving && !driving
-  if (maggie.moving) maggie.facing = Math.atan2(ty - maggie.y, tx - maggie.x) || maggie.facing
+  const dist = Math.hypot(tx - maggie.x, ty - maggie.y)
+  if (driving || playerMoving) {
+    const catchup = driving ? 8 : dist > 40 ? 7 : 5.4
+    const nx = maggie.x + (tx - maggie.x) * Math.min(1, dt * catchup)
+    const ny = maggie.y + (ty - maggie.y) * Math.min(1, dt * catchup)
+    if (!collide || !blocked(map, nx, maggie.y, 8)) maggie.x = nx
+    if (!collide || !blocked(map, maggie.x, ny, 8)) maggie.y = ny
+    maggie.sitting = false
+    maggie.moving = !driving
+    if (dist > 1) maggie.facing = Math.atan2(ty - maggie.y, tx - maggie.x) || maggie.facing
+  } else {
+    maggie.moving = false
+    maggie.sitting = true
+  }
   maggie.lineT -= dt
-  if (maggie.lineT <= 0) maggie.line = null
   maggie.line = null
 }
 
@@ -181,8 +186,8 @@ export function GtaWorld() {
     x: worldX,
     y: worldY,
     facing: 0,
-    maggieX: worldX - 28,
-    maggieY: worldY + 18,
+    maggieX: worldX + 10,
+    maggieY: worldY + 16,
     maggieLine: null as string | null,
   })
 
@@ -212,11 +217,11 @@ export function GtaWorld() {
   const moving = useRef(false)
   const facingRef = useRef(0)
   const maggie = useRef({
-    x: worldX - 28,
-    y: worldY + 18,
+    x: worldX + 10,
+    y: worldY + 16,
     facing: 0,
     moving: false,
-    sitting: false,
+    sitting: true,
     line: null as string | null,
     lineT: 0,
   })
@@ -236,11 +241,11 @@ export function GtaWorld() {
     wanted,
     nextId: next?.id ?? null,
     actors: actors.current,
-    maggieX: worldX - 28,
-    maggieY: worldY + 18,
+    maggieX: worldX + 10,
+    maggieY: worldY + 16,
     maggieFacing: 0,
     maggieMoving: false,
-    maggieSitting: false,
+    maggieSitting: true,
     maggieLine: null,
     interior: "street",
     trailer: false,
@@ -258,8 +263,8 @@ export function GtaWorld() {
     if (cityRef.current !== location) {
       cityRef.current = location
       pos.current = { ...map.spawn }
-      maggie.current.x = map.spawn.x - 28
-      maggie.current.y = map.spawn.y + 18
+      maggie.current.x = map.spawn.x + 10
+      maggie.current.y = map.spawn.y + 16
       setWorldPos(map.spawn.x, map.spawn.y)
     }
   }, [location, map, setWorldPos])
