@@ -128,9 +128,9 @@ function City({ map, live }: { map: WorldMap; live: MutableRefObject<LiveWorld> 
             >
               <planeGeometry args={[sx(road.w), sx(road.h)]} />
               <meshStandardMaterial
-                color={hayarkonRoad ? "#3c3c4a" : "#454554"}
-                roughness={0.42}
-                metalness={0.38}
+                color={hayarkonRoad ? "#6a6b74" : "#73747c"}
+                roughness={0.9}
+                metalness={0.04}
               />
             </mesh>
             <mesh
@@ -159,7 +159,7 @@ function City({ map, live }: { map: WorldMap; live: MutableRefObject<LiveWorld> 
             </mesh>
             {building.label ? (
               <group position={[0, 1.1, sx(building.h) / 2 + 0.08]}>
-                <NeonSign text={building.label} color="#f8fafc" width={Math.min(5.2, sx(building.w) * 0.62)} />
+                <PlaceSign text={building.label} width={Math.min(5.2, sx(building.w) * 0.62)} />
               </group>
             ) : null}
           </group>
@@ -192,7 +192,7 @@ function Crosswalk({ stop }: { stop: { x: number; y: number; w: number; h: numbe
             rotation={[-Math.PI / 2, 0, 0]}
           >
             <planeGeometry args={[sx(stop.w) * 0.72, sx(3.2)]} />
-            <meshStandardMaterial color="#f8fafc" emissive="#e2e8f0" emissiveIntensity={0.18} />
+            <meshStandardMaterial color="#f1f5f9" />
           </mesh>
         )
       })}
@@ -269,7 +269,7 @@ function HayarkonCurb({ road }: { road: { x: number; y: number; w: number; h: nu
     stripes.push(
       <mesh key={`c-${i}`} position={[sx(road.x + 2.4), 0.06, z]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[0.28, sx(28)]} />
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.2} />
+        <meshStandardMaterial color={color} />
       </mesh>
     )
   }
@@ -285,7 +285,7 @@ function ParkingLot({ lot }: { lot: { x: number; y: number; w: number; h: number
         receiveShadow
       >
         <planeGeometry args={[sx(lot.w), sx(lot.h)]} />
-        <meshStandardMaterial color="#1f1f27" roughness={0.22} metalness={0.65} />
+        <meshStandardMaterial color="#8a8b92" roughness={0.92} metalness={0.02} />
       </mesh>
       {[0, 1, 2, 3].map((i) => (
         <mesh
@@ -297,52 +297,12 @@ function ParkingLot({ lot }: { lot: { x: number; y: number; w: number; h: number
           <meshBasicMaterial color="#e2e8f0" />
         </mesh>
       ))}
-      <group position={[sx(lot.x + lot.w / 2), 2.6, sx(lot.y + 18)]}>
-        <NeonSign text="P  כחול־לבן" color="#60a5fa" width={5.5} />
-      </group>
     </group>
   )
 }
 
-function Windows({
-  width,
-  depth,
-  height,
-  seed,
-  hotel,
-}: {
-  width: number
-  depth: number
-  height: number
-  seed: number
-  hotel?: boolean
-}) {
-  const rows = Math.max(2, Math.min(hotel ? 6 : 4, Math.floor(height / (hotel ? 2.2 : 2.8))))
-  const colsW = Math.min(hotel ? 5 : 3, Math.max(2, Math.floor(width / 3)))
-  const panes: ReactNode[] = []
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < colsW; c++) {
-      const lit = (r * 3 + c + seed) % 3 !== 0
-      const y = -height / 2 + 1.35 + r * (hotel ? 1.9 : 2.15)
-      const x = -width / 2 + 1.1 + c * ((width - 2.2) / Math.max(1, colsW - 1))
-      panes.push(
-        <mesh key={`s-${r}-${c}`} position={[x, y, depth / 2 + 0.03]}>
-          <boxGeometry args={[0.62, 0.82, 0.04]} />
-          <meshStandardMaterial
-            color={lit ? "#fde68a" : "#1e293b"}
-            emissive={lit ? "#fbbf24" : "#0f172a"}
-            emissiveIntensity={lit ? 2.4 : 0.08}
-            roughness={0.15}
-          />
-        </mesh>
-      )
-    }
-  }
-  return <group>{panes}</group>
-}
-
-function NeonSign({ text, color, width }: { text: string; color: string; width: number }) {
-  const texture = useMemo(() => makeSignTexture(text, color), [text, color])
+function PlaceSign({ text, width }: { text: string; width: number }) {
+  const texture = useMemo(() => makeSignTexture(text), [text])
   useEffect(() => () => texture.dispose(), [texture])
   return (
     <mesh>
@@ -352,21 +312,22 @@ function NeonSign({ text, color, width }: { text: string; color: string; width: 
   )
 }
 
-function makeSignTexture(text: string, color: string) {
+function makeSignTexture(text: string) {
   const canvas = document.createElement("canvas")
   canvas.width = 512
   canvas.height = 128
   const ctx = canvas.getContext("2d")
   if (!ctx) return new CanvasTexture(canvas)
-  ctx.fillStyle = "#07060c"
+  ctx.fillStyle = "#f3ead8"
   ctx.fillRect(0, 0, 512, 128)
+  ctx.strokeStyle = "#c4b49a"
+  ctx.lineWidth = 8
+  ctx.strokeRect(4, 4, 504, 120)
   ctx.direction = "rtl"
-  ctx.fillStyle = color
-  ctx.font = "700 64px Rubik, Arial, sans-serif"
+  ctx.fillStyle = "#3f3a32"
+  ctx.font = "700 56px Rubik, Arial, sans-serif"
   ctx.textAlign = "center"
   ctx.textBaseline = "middle"
-  ctx.shadowColor = color
-  ctx.shadowBlur = 22
   ctx.fillText(text, 256, 68)
   const tex = new CanvasTexture(canvas)
   tex.needsUpdate = true
@@ -394,24 +355,6 @@ function Palm({ x, z }: { x: number; z: number }) {
   )
 }
 
-function StreetLamp({ x, z, lit }: { x: number; z: number; lit: boolean }) {
-  return (
-    <group position={[x, 0, z]}>
-      <mesh position={[0, 2.15, 0]}>
-        <cylinderGeometry args={[0.05, 0.07, 4.3, 6]} />
-        <meshStandardMaterial color="#111827" metalness={0.7} roughness={0.3} />
-      </mesh>
-      <mesh position={[0.28, 4.35, 0]}>
-        <sphereGeometry args={[0.14, 8, 8]} />
-        <meshBasicMaterial color="#ffd7a1" />
-      </mesh>
-      {lit && !E2E ? (
-        <pointLight position={[0.28, 4.2, 0]} color="#ffd7a1" intensity={1.35} distance={14} />
-      ) : null}
-    </group>
-  )
-}
-
 function ParkedMesh({ car }: { car: ParkedCar }) {
   const [x, , z] = to3(car.x, car.y)
   return (
@@ -426,10 +369,10 @@ function FollowCamera({ live }: { live: MutableRefObject<LiveWorld> }) {
     const world = live.current
     const [px, , pz] = to3(world.x, world.y)
     const cafe = world.interior === "cafe"
-    const back = cafe ? 5.2 : world.driving ? 12 : 7.4
-    const height = cafe ? 2.8 : world.driving ? 5.6 : 3.9
+    const back = cafe ? 5.2 : world.driving ? 12 : 8.2
+    const height = cafe ? 2.8 : world.driving ? 5.6 : 5.1
     const yaw = world.facing
-    const side = cafe ? 0.2 : world.driving ? 0.4 : 0.9
+    const side = cafe ? 0.2 : world.driving ? 0.4 : 0.25
     CAM.set(
       px - Math.cos(yaw) * back + Math.cos(yaw + Math.PI / 2) * side,
       height,

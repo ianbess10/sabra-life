@@ -125,8 +125,8 @@ export function buildTelAviv(): WorldMap {
     { label: string; fill: string; roof: string; park?: boolean; lot?: boolean }
   > = {
     "0,0": { label: "חוף", fill: "#f4eee3", roof: "#2a6f8f", park: true },
-    "0,1": { label: "מלון", fill: "#2a2438", roof: "#0f172a" },
-    "0,2": { label: "דירות", fill: "#3b3348", roof: "#1e293b" },
+    "0,1": { label: "מלון", fill: "#efe6d8", roof: "#8b5a3c" },
+    "0,2": { label: "דירות", fill: "#e4d8c8", roof: "#6d4c41" },
     "1,0": { label: "חניה", fill: "#ead9c4", roof: "#1d4ed8", lot: true },
     "3,0": { label: "פארק", fill: "#c5ddb6", roof: "#3f7d4e", park: true },
     "4,0": { label: "דשא", fill: "#dce8d3", roof: "#4d8a5a", park: true },
@@ -140,8 +140,8 @@ export function buildTelAviv(): WorldMap {
     "0,3": { label: "השכרה", fill: "#d6d0c8", roof: "#334155" },
     "1,3": { label: "דלק", fill: "#c9b8a6", roof: "#9a3412" },
     "2,3": { label: "תחנה", fill: "#ddd3c6", roof: "#166534" },
-    "0,4": { label: "נתב״ג", fill: "#9aa3ad", roof: "#1e293b" },
-    "1,4": { label: "מוניות", fill: "#b9c4ce", roof: "#eab308" },
+    "0,4": { label: "נתב״ג", fill: "#e6ddd0", roof: "#6d4c41" },
+    "1,4": { label: "מוניות", fill: "#eadfcf", roof: "#b45309" },
   }
 
   for (let c = 0; c < vx.length - 1; c++) {

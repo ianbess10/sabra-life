@@ -63,7 +63,7 @@ The first visit opens a beta briefing that asks for your gender profile. Reopen 
 5. Travel between cities costs ₪15 on public transit unless you own a Mazda or Tesla. A scooter does not leave Tel Aviv.
 6. Tap **רמז באנגלית** to reveal English for the current screen — it deducts ₪50.
 7. A wrong mission answer costs ₪5. The right line advances the dialogue tree; finishing a tree pays `xpReward` and `shekelReward`.
-8. Lines auto-play in Hebrew (`he-IL`). Tap the speaker to hear one again.
+8. Hebrew audio is on demand: tap the speaker on a line. Nothing auto-plays when you land.
 9. Dashed words cost ₪1 each and show an English gloss.
 
 ## End-to-end tests
