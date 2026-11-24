@@ -2,14 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from "react"
 import { Canvas } from "@react-three/fiber"
-import { PCFShadowMap } from "three"
+import { ACESFilmicToneMapping, PCFShadowMap, SRGBColorSpace } from "three"
 import { toast } from "sonner"
-import { Smartphone } from "lucide-react"
+import { Smartphone, Volume2, VolumeX } from "lucide-react"
 
+import { DuskSting } from "@/components/dusk-sting"
 import { GtaPhone } from "@/components/gta-phone"
 import { GtaScene } from "@/components/gta-scene"
 import { StreetMission } from "@/components/street-mission"
 import { Button } from "@/components/ui/button"
+import { useStreetAudio } from "@/hooks/use-street-audio"
 import { ownedVehicleItem } from "@/lib/catalog"
 import { UI } from "@/lib/copy"
 import { getMission, nextAvailableMission } from "@/lib/missions"
@@ -58,8 +60,9 @@ function seedActors(map: WorldMap): Actor[] {
       h: 16,
     })
   }
-  for (let i = 0; i < 8; i++) {
-    const road = map.roads[(i * 2) % map.roads.length]
+  for (let i = 0; i < 10; i++) {
+    const hayarkon = map.roads.find((road) => road.name === "hayarkon")
+    const road = i < 6 && hayarkon ? hayarkon : map.roads[(i * 2) % map.roads.length]
     const along = ((i * 131) % 1000) / 1000
     const horiz = road.w > road.h
     const x = horiz ? road.x + along * road.w : road.x + 22
@@ -70,7 +73,7 @@ function seedActors(map: WorldMap): Actor[] {
       x,
       y,
       vx: horiz ? (i % 2 === 0 ? 90 : -90) : 0,
-      vy: horiz ? 0 : i % 2 === 0 ? 90 : -90,
+      vy: horiz ? 0 : i % 2 === 0 ? 96 : -96,
       color: i % 3 === 0 ? "#facc15" : i % 3 === 1 ? "#0f172a" : "#fff7ed",
       line: null,
       lineT: 0,
@@ -197,6 +200,8 @@ export function GtaWorld() {
   const [active, setActive] = useState<Mission | null>(null)
   const [near, setNear] = useState<Landmark | null>(null)
   const [sprint, setSprint] = useState(false)
+  const [sting, setSting] = useState(true)
+  const { muted, setMuted } = useStreetAudio(!welcomeOpen && !phoneOpen)
   const keys = useRef(new Set<string>())
   const stick = useRef<Stick>({ x: 0, y: 0 })
   const pos = useRef({ x: worldX, y: worldY })
@@ -263,6 +268,15 @@ export function GtaWorld() {
   }, [])
 
   useEffect(() => {
+    if (welcomeOpen) {
+      setSting(true)
+      return
+    }
+    const timer = window.setTimeout(() => setSting(false), 5200)
+    return () => window.clearTimeout(timer)
+  }, [welcomeOpen])
+
+  useEffect(() => {
     function down(event: KeyboardEvent) {
       const key = event.key.toLowerCase()
       if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)) {
@@ -299,9 +313,19 @@ export function GtaWorld() {
         }
         setInVehicle(true)
       }
+      if (mission.id === "ta_parking") {
+        const parking = map.landmarks.find((item) => item.id === "parking")
+        const hayarkon = map.roads.find((road) => road.name === "hayarkon")
+        if (parking) {
+          const x = hayarkon ? hayarkon.x + hayarkon.w * 0.55 : parking.x
+          pos.current = { x, y: parking.y }
+          facingRef.current = Math.PI
+          setWorldPos(x, parking.y)
+        }
+      }
       setActive(mission)
     },
-    [map.landmarks, setInVehicle, setWorldPos]
+    [map, setInVehicle, setWorldPos]
   )
 
   const tryInteract = useCallback(() => {
@@ -493,19 +517,22 @@ export function GtaWorld() {
   return (
     <div
       ref={frame}
-      className="relative min-h-0 flex-1 overflow-hidden bg-[#123322]"
+      className="relative min-h-0 flex-1 overflow-hidden bg-[#14081f]"
       data-testid="gta-world"
       tabIndex={0}
     >
       <div dir="ltr" className="absolute inset-0" data-testid="gta-canvas">
         <Canvas
-          shadows
+          shadows={process.env.NEXT_PUBLIC_E2E !== "1"}
           dpr={[1, 1.5]}
-          camera={{ fov: 55, near: 0.1, far: 420, position: [40, 12, 48] }}
-          gl={{ antialias: true, alpha: false }}
+          camera={{ fov: 50, near: 0.1, far: 420, position: [40, 12, 48] }}
+          gl={{ antialias: true, alpha: false, toneMapping: ACESFilmicToneMapping }}
           onCreated={({ gl }) => {
-            gl.shadowMap.enabled = true
+            gl.shadowMap.enabled = process.env.NEXT_PUBLIC_E2E !== "1"
             gl.shadowMap.type = PCFShadowMap
+            gl.toneMapping = ACESFilmicToneMapping
+            gl.toneMappingExposure = 1.12
+            gl.outputColorSpace = SRGBColorSpace
           }}
         >
           <GtaScene
@@ -541,7 +568,7 @@ export function GtaWorld() {
         </p>
       </div>
 
-      <div className="absolute top-3 right-3 z-20">
+      <div className="absolute top-3 right-3 z-20 flex flex-col gap-2">
         <Button
           type="button"
           data-testid="gta-phone"
@@ -553,7 +580,21 @@ export function GtaWorld() {
           <Smartphone />
           <span className="sr-only">{UI.phone.he}</span>
         </Button>
+        <Button
+          type="button"
+          data-testid="street-audio-toggle"
+          size="icon"
+          variant="secondary"
+          onClick={() => setMuted((value) => !value)}
+          className="size-11 rounded-full bg-black/50 text-white shadow-lg hover:bg-black/70"
+          title={muted ? UI.unmuteStreet.he : UI.muteStreet.he}
+        >
+          {muted ? <VolumeX /> : <Volume2 />}
+          <span className="sr-only">{muted ? UI.unmuteStreet.he : UI.muteStreet.he}</span>
+        </Button>
       </div>
+
+      <DuskSting show={sting && !welcomeOpen && !phoneOpen && !active} />
 
       <Joystick
         onMove={(x, y) => {
@@ -634,7 +675,7 @@ function Radar({
         ))}
       </div>
       <div
-        className="relative overflow-hidden rounded-full border-2 border-white/30 bg-[#052e16]/90 shadow-xl"
+        className="relative overflow-hidden rounded-full border-2 border-white/30 bg-[#1a0b24]/90 shadow-xl"
         style={{ width: size, height: size }}
       >
         {map.sea ? (

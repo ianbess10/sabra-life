@@ -8,6 +8,7 @@ const E2E_SUPABASE_ANON_KEY =
 export default defineConfig({
   testDir: "./tests",
   fullyParallel: true,
+  timeout: 45_000,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,

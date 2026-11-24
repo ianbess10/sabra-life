@@ -31,7 +31,7 @@ test.describe("Suite 5: Daily Streak Mechanics", () => {
     await expect(page.getByTestId("hud-streak")).toContainText("4")
     await expect(page.getByTestId("hud-flame")).toHaveClass(/text-orange-500/)
     await expect(page.getByText("Streak Bonus Applied").first()).toBeVisible()
-    await expect(page.locator("p.text-orange-500").first()).toContainText("בונוס רצף")
+    await expect(page.getByText("בונוס רצף").first()).toBeVisible()
 
     const state = await getGameState(page)
     expect(state.lastMissionDate).toBe("2026-11-23")

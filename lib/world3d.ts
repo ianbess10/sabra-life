@@ -43,6 +43,8 @@ export function sx(n: number) {
 }
 
 export function buildingHeight(label: string | undefined, index: number) {
+  if (label === "מלון") return 24
+  if (label === "דירות") return 18
   if (label === "נתב״ג") return 16
   if (label === "מוניות") return 7
   if (label === "בנק") return 12

@@ -18,6 +18,16 @@ export type Building = Rect & {
   roof?: string
 }
 
+export type Road = Rect & { name?: string }
+
+export type ParkedCar = {
+  x: number
+  y: number
+  facing: number
+  color: string
+  taxi?: boolean
+}
+
 export type WorldMap = {
   id: CitySlug
   w: number
@@ -26,9 +36,11 @@ export type WorldMap = {
   sea?: Rect
   sand?: Rect
   parks: Rect[]
-  roads: Rect[]
+  lots: Rect[]
+  roads: Road[]
   buildings: Building[]
   landmarks: Landmark[]
+  parked: ParkedCar[]
 }
 
 export const PLAYER_R = 14
@@ -38,6 +50,8 @@ export const PED_LINES = [
   "יאללה תזוז",
   "סליחה",
   "יש פקק",
+  "אין חניה",
+  "הירקון פקק",
   "חם היום",
   "איפה האוטובוס?",
   "וואלה",
@@ -53,11 +67,11 @@ export const MAGGIE_LINES = ["ווף!", "הב הב", "וווף ווף", "מגי!
 
 const ROAD_W = 70
 
-function roadH(y: number, w: number): Rect {
-  return { x: 0, y, w, h: ROAD_W }
+function roadH(y: number, w: number, name?: string): Road {
+  return { x: 0, y, w, h: ROAD_W, name }
 }
-function roadV(x: number, h: number): Rect {
-  return { x, y: 0, w: ROAD_W, h }
+function roadV(x: number, h: number, name?: string): Road {
+  return { x, y: 0, w: ROAD_W, h, name }
 }
 
 function block(
@@ -77,13 +91,15 @@ export function buildTelAviv(): WorldMap {
   const h = 2140
   const vx = [250, 640, 1040, 1440, 1840, 2240]
   const hy = [180, 520, 860, 1200, 1540, 1880]
-  const roads = [
+  const roads: Road[] = [
     ...hy.map((y) => roadH(y, w)),
-    ...vx.map((x) => roadV(x, h)),
+    ...vx.map((x, index) => roadV(x, h, index === 0 ? "hayarkon" : undefined)),
   ]
   const buildings: Building[] = []
   const parks: Rect[] = []
+  const lots: Rect[] = []
   const inset = 22
+  const carColors = ["#f8fafc", "#0f172a", "#b91c1c", "#1e3a8a", "#eab308", "#64748b", "#fb7185"]
   const fills = ["#d9cbb8", "#efe6d6", "#cfc3ae", "#e4d5c0", "#f2eadc", "#cbbba3"]
   const roofs = ["#8b3a32", "#6d4c41", "#7a2f2f", "#5c4033"]
 
@@ -100,9 +116,14 @@ export function buildTelAviv(): WorldMap {
     return { x: rect.x + rect.w / 2, y: hy[r + 1] + ROAD_W / 2 }
   }
 
-  const named: Record<string, { label: string; fill: string; roof: string; park?: boolean }> = {
+  const named: Record<
+    string,
+    { label: string; fill: string; roof: string; park?: boolean; lot?: boolean }
+  > = {
     "0,0": { label: "חוף", fill: "#f4eee3", roof: "#2a6f8f", park: true },
-    "1,0": { label: "חניה", fill: "#ead9c4", roof: "#1d4ed8" },
+    "0,1": { label: "מלון", fill: "#2a2438", roof: "#0f172a" },
+    "0,2": { label: "דירות", fill: "#3b3348", roof: "#1e293b" },
+    "1,0": { label: "חניה", fill: "#ead9c4", roof: "#1d4ed8", lot: true },
     "3,0": { label: "פארק", fill: "#c5ddb6", roof: "#3f7d4e", park: true },
     "4,0": { label: "דשא", fill: "#dce8d3", roof: "#4d8a5a", park: true },
     "1,1": { label: "קפה", fill: "#f0e6d8", roof: "#b45309" },
@@ -126,6 +147,10 @@ export function buildTelAviv(): WorldMap {
       const spec = named[`${c},${r}`]
       if (spec?.park) {
         parks.push(rect)
+        continue
+      }
+      if (spec?.lot) {
+        lots.push(rect)
         continue
       }
       buildings.push(
@@ -154,7 +179,7 @@ export function buildTelAviv(): WorldMap {
     { id: "rental", missionId: "ta_rent_car", nameHe: "השכרה", nameEn: "Rental", ...d(0, 3), color: "#94a3b8" },
     { id: "fuel", missionId: "ta_fuel", nameHe: "דלק", nameEn: "Fuel", ...d(1, 3), color: "#fb923c" },
     { id: "beach", missionId: "ta_directions", nameHe: "חוף", nameEn: "Beach", ...d(0, 0), color: "#38bdf8" },
-    { id: "parking", missionId: "ta_parking", nameHe: "חניה", nameEn: "Parking", ...d(1, 0), color: "#60a5fa" },
+    { id: "parking", missionId: "ta_parking", nameHe: "חניה בהירקון", nameEn: "Hayarkon parking", ...d(1, 0), color: "#60a5fa" },
     { id: "cop", missionId: "ta_speeding", nameHe: "משטרה", nameEn: "Police", x: vx[0] + ROAD_W / 2, y: hy[3] + ROAD_W / 2, color: "#2563eb" },
     { id: "crash", missionId: "ta_accident", nameHe: "תאונה", nameEn: "Crash", x: vx[3] + ROAD_W / 2, y: hy[3] + ROAD_W / 2, color: "#ef4444" },
     { id: "grocery", missionId: "ta_grocery", nameHe: "סופר", nameEn: "Super", ...d(3, 2), color: "#84cc16" },
@@ -164,6 +189,34 @@ export function buildTelAviv(): WorldMap {
     { id: "bus", missionId: "ta_transit_01", nameHe: "תחנה", nameEn: "Station", ...d(2, 3), color: "#22c55e" },
   ]
 
+  const parked: ParkedCar[] = []
+  const hayarkon = vx[0]
+  for (let i = 0; i < 18; i++) {
+    const y = 110 + i * 108
+    const west = i % 2 === 0
+    parked.push({
+      x: west ? hayarkon + 16 : hayarkon + ROAD_W - 16,
+      y,
+      facing: west ? Math.PI / 2 : -Math.PI / 2,
+      color: carColors[i % carColors.length],
+      taxi: i % 9 === 0,
+    })
+  }
+  for (const lot of lots) {
+    const cols = 3
+    const rows = 3
+    for (let c = 0; c < cols; c++) {
+      for (let r = 0; r < rows; r++) {
+        parked.push({
+          x: lot.x + 48 + c * ((lot.w - 80) / Math.max(1, cols - 1)),
+          y: lot.y + 36 + r * ((lot.h - 80) / Math.max(1, rows - 1)),
+          facing: Math.PI / 2,
+          color: carColors[(c * 3 + r) % carColors.length],
+        })
+      }
+    }
+  }
+
   return {
     id: "tel-aviv",
     w,
@@ -172,9 +225,11 @@ export function buildTelAviv(): WorldMap {
     sea: { x: 0, y: 0, w: 200, h },
     sand: { x: 200, y: 0, w: 50, h },
     parks,
+    lots,
     roads,
     buildings,
     landmarks,
+    parked,
   }
 }
 
@@ -201,6 +256,7 @@ export function buildJerusalem(): WorldMap {
     h,
     spawn: { x: 500, y: 620 },
     parks: [{ x: 790, y: 690, w: 380, h: 80 }],
+    lots: [],
     roads,
     buildings,
     landmarks: [
@@ -208,6 +264,7 @@ export function buildJerusalem(): WorldMap {
       { id: "mahane", missionId: "jer-mahane", nameHe: "מחנה יהודה", nameEn: "Mahane Yehuda", x: 980, y: 430, color: "#f97316" },
       { id: "oldcity", missionId: "jer-oldcity", nameHe: "העיר העתיקה", nameEn: "Old City", x: 480, y: 830, color: "#d6d3d1" },
     ],
+    parked: [],
   }
 }
 
@@ -226,6 +283,7 @@ export function buildRaanana(): WorldMap {
     h,
     spawn: { x: 500, y: 500 },
     parks: [{ x: 770, y: 650, w: 380, h: 250 }],
+    lots: [],
     roads,
     buildings,
     landmarks: [
@@ -233,6 +291,7 @@ export function buildRaanana(): WorldMap {
       { id: "arnona", missionId: "ra-arnona", nameHe: "ארנונה", nameEn: "Arnona", x: 960, y: 400, color: "#f59e0b" },
       { id: "board", missionId: "ra-boardroom", nameHe: "הנהלה", nameEn: "Boardroom", x: 460, y: 780, color: "#64748b" },
     ],
+    parked: [],
   }
 }
 

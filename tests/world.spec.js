@@ -25,6 +25,21 @@ test.describe("GTA streets", () => {
     await expect(page.getByText("שלום, דרכון בבקשה. עלייה?")).toBeVisible()
   })
 
+  test("dusk sting sells GTA Tel Aviv, then Hayarkon parking is a Hebrew lesson", async ({
+    page,
+  }) => {
+    await gotoApp(page, "/")
+    await expect(page.getByTestId("dusk-sting-title")).toHaveText("GTA תל אביב")
+    await expect(page.getByTestId("dusk-sting")).toContainText("חניה ברחוב הירקון")
+    await page.getByTestId("gta-phone").click()
+    await page
+      .getByTestId("mission-ta_parking")
+      .getByRole("button", { name: /התחל משימה|תרגול/ })
+      .click()
+    await expect(page.getByText("חושבים שווייס סיטי קשוחה? פה רחוב הירקון. כחול־לבן, צריך לשלם.")).toBeVisible()
+    await expect(page.getByRole("button", { name: "אני משלם עכשיו בפנגו." })).toBeVisible()
+  })
+
   test("phone still starts the cafe mission", async ({ page }) => {
     await gotoApp(page, "/")
     await page.getByTestId("gta-phone").click()
