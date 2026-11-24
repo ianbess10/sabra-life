@@ -26,6 +26,12 @@ export type LiveWorld = {
   wanted: number
   nextId: string | null
   actors: LiveActor[]
+  maggieX: number
+  maggieY: number
+  maggieFacing: number
+  maggieMoving: boolean
+  maggieSitting: boolean
+  maggieLine: string | null
 }
 
 export function to3(x: number, y: number, lift = 0): [number, number, number] {

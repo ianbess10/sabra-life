@@ -70,6 +70,8 @@ export const UI = {
   phrase: { he: "ביטוי", en: "Phrase" },
   phone: { he: "טלפון", en: "Phone" },
   streets: { he: "הרחוב", en: "The street" },
+  maggie: { he: "מגי", en: "Maggie" },
+  maggieBreed: { he: "סקוטי טרייר", en: "Scottish Terrier" },
   howToPlay: { he: "מדריך", en: "How to play" },
   welcomeCta: { he: "יאללה, בהצלחה", en: "Yalla, good luck" },
   inventoryTitle: { he: "הרכוש שלך", en: "Your stuff" },

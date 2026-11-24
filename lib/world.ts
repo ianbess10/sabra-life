@@ -49,6 +49,8 @@ export const PED_LINES = [
 
 export const COP_LINES = ["עצור!", "משטרה!", "רישיון בבקשה!"]
 
+export const MAGGIE_LINES = ["ווף!", "הב הב", "וווף ווף", "מגי!"]
+
 const ROAD_W = 70
 
 function roadH(y: number, w: number): Rect {

@@ -25,7 +25,7 @@ export const WELCOME = {
     },
     {
       title: "The street",
-      body: "Third person, like GTA. WASD or the stick to walk the street. E talks in Hebrew without leaving the world. F gets in a Yad2 vehicle, or a taxi at נתב״ג. P opens the phone. The taxi ride to Rothschild is a real drive — the driver keeps talking while you steer. Bump people and wanted stars come out.",
+      body: "Third person, like GTA. WASD or the stick to walk the street. Maggie, your black Scottish Terrier, heels at your side — מגי on the HUD and a dark blip on the radar. E talks in Hebrew without leaving the world. F gets in a Yad2 vehicle, or a taxi at נתב״ג; Maggie hops in too. P opens the phone. The taxi ride to Rothschild is a real drive — the driver keeps talking while you steer. Bump people and wanted stars come out.",
     },
     {
       title: "The Oleh Test",

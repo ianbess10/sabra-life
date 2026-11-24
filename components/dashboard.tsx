@@ -211,6 +211,11 @@ export function Dashboard({
               he={gender === "female" ? "אישה" : "גבר"}
               en={gender === "female" ? "Woman" : "Man"}
             />
+            <ItemLine
+              label={{ he: "חברה", en: "Companion" }}
+              he={`${UI.maggie.he} · ${UI.maggieBreed.he}`}
+              en={`${UI.maggie.en} · ${UI.maggieBreed.en}`}
+            />
           </CardContent>
           <CardFooter className="justify-between">
             <Link

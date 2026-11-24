@@ -10,7 +10,9 @@ test.describe("GTA streets", () => {
     await expect(page.getByTestId("gta-world")).toBeVisible()
     await expect(page.getByTestId("gta-canvas")).toBeVisible()
     await expect(page.getByTestId("gta-player")).toBeVisible()
+    await expect(page.getByTestId("gta-maggie")).toHaveText("מגי")
     await expect(page.getByTestId("gta-radar")).toBeVisible()
+    await expect(page.getByTestId("gta-maggie-blip")).toBeVisible()
     await expect(page.getByTestId("gta-phone")).toBeVisible()
   })
 

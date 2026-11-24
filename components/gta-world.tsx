@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils"
 import {
   COP_LINES,
   INTERACT_R,
+  MAGGIE_LINES,
   PED_LINES,
   blocked,
   dist,
@@ -108,6 +109,44 @@ function seedActors(map: WorldMap): Actor[] {
   return actors
 }
 
+function heelMaggie(
+  maggie: {
+    x: number
+    y: number
+    facing: number
+    moving: boolean
+    sitting: boolean
+    line: string | null
+    lineT: number
+  },
+  map: WorldMap,
+  px: number,
+  py: number,
+  facing: number,
+  driving: boolean,
+  playerMoving: boolean,
+  dt: number
+) {
+  const behind = driving ? 2 : 10
+  const side = driving ? 14 : 24
+  const tx = px - Math.cos(facing) * behind + Math.cos(facing + Math.PI / 2) * side
+  const ty = py - Math.sin(facing) * behind + Math.sin(facing + Math.PI / 2) * side
+  const catchup = driving ? 10 : playerMoving ? 3.4 : 1.8
+  const nx = maggie.x + (tx - maggie.x) * Math.min(1, dt * catchup)
+  const ny = maggie.y + (ty - maggie.y) * Math.min(1, dt * catchup)
+  if (!blocked(map, nx, maggie.y, 8)) maggie.x = nx
+  if (!blocked(map, maggie.x, ny, 8)) maggie.y = ny
+  maggie.moving = playerMoving && Math.hypot(tx - maggie.x, ty - maggie.y) > 3
+  maggie.sitting = !playerMoving && !driving
+  if (maggie.moving) maggie.facing = Math.atan2(ty - maggie.y, tx - maggie.x) || maggie.facing
+  maggie.lineT -= dt
+  if (maggie.lineT <= 0) maggie.line = null
+  if (playerMoving && Math.random() < 0.004) {
+    maggie.line = MAGGIE_LINES[Math.floor(Math.random() * MAGGIE_LINES.length)]
+    maggie.lineT = 1.8
+  }
+}
+
 function moveActor(map: WorldMap, actor: Actor, dt: number) {
   const nx = actor.x + actor.vx * dt
   const ny = actor.y + actor.vy * dt
@@ -145,7 +184,14 @@ export function GtaWorld() {
   const level = levelFromXp(xp).level
   const next = nextAvailableMission(location, level, completed)
   const vehicle = ownedVehicleItem(inventory)
-  const [spot, setSpot] = useState({ x: worldX, y: worldY, facing: 0 })
+  const [spot, setSpot] = useState({
+    x: worldX,
+    y: worldY,
+    facing: 0,
+    maggieX: worldX - 28,
+    maggieY: worldY + 18,
+    maggieLine: null as string | null,
+  })
 
   const [phoneOpen, setPhoneOpen] = useState(false)
   const [active, setActive] = useState<Mission | null>(null)
@@ -161,6 +207,15 @@ export function GtaWorld() {
   const hudT = useRef(0)
   const moving = useRef(false)
   const facingRef = useRef(0)
+  const maggie = useRef({
+    x: worldX - 28,
+    y: worldY + 18,
+    facing: 0,
+    moving: false,
+    sitting: false,
+    line: null as string | null,
+    lineT: 0,
+  })
   const taxiRide = active?.id === "bg_taxi"
   const driving = taxiRide || (inVehicle && Boolean(vehicle) && vehicle?.id !== "rav-kav")
   const talking = Boolean(active) && !taxiRide
@@ -177,6 +232,12 @@ export function GtaWorld() {
     wanted,
     nextId: next?.id ?? null,
     actors: actors.current,
+    maggieX: worldX - 28,
+    maggieY: worldY + 18,
+    maggieFacing: 0,
+    maggieMoving: false,
+    maggieSitting: false,
+    maggieLine: null,
   })
 
   useEffect(() => {
@@ -190,6 +251,8 @@ export function GtaWorld() {
     if (cityRef.current !== location) {
       cityRef.current = location
       pos.current = { ...map.spawn }
+      maggie.current.x = map.spawn.x - 28
+      maggie.current.y = map.spawn.y + 18
       setWorldPos(map.spawn.x, map.spawn.y)
     }
   }, [location, map, setWorldPos])
@@ -367,7 +430,14 @@ export function GtaWorld() {
         if (hudT.current > 0.05) {
           hudT.current = 0
           setNear(closest)
-          setSpot({ x: pos.current.x, y: pos.current.y, facing: facingRef.current })
+          setSpot({
+            x: pos.current.x,
+            y: pos.current.y,
+            facing: facingRef.current,
+            maggieX: maggie.current.x,
+            maggieY: maggie.current.y,
+            maggieLine: maggie.current.line,
+          })
         }
         if (storeT.current > 0.8) {
           storeT.current = 0
@@ -376,6 +446,16 @@ export function GtaWorld() {
       } else {
         moving.current = false
       }
+      heelMaggie(
+        maggie.current,
+        map,
+        pos.current.x,
+        pos.current.y,
+        facingRef.current,
+        Boolean(driving),
+        moving.current,
+        dt
+      )
       live.current = {
         x: pos.current.x,
         y: pos.current.y,
@@ -387,6 +467,12 @@ export function GtaWorld() {
         wanted: useGameStore.getState().wanted,
         nextId: next?.id ?? null,
         actors: actors.current,
+        maggieX: maggie.current.x,
+        maggieY: maggie.current.y,
+        maggieFacing: maggie.current.facing,
+        maggieMoving: maggie.current.moving,
+        maggieSitting: maggie.current.sitting,
+        maggieLine: maggie.current.line,
       }
       raf = window.requestAnimationFrame(loop)
     }
@@ -439,6 +525,8 @@ export function GtaWorld() {
         facing={spot.facing}
         nextId={next?.id ?? null}
         wanted={wanted}
+        maggieX={spot.maggieX}
+        maggieY={spot.maggieY}
       />
 
       <div className="pointer-events-none absolute top-3 left-1/2 z-20 -translate-x-1/2">
@@ -447,6 +535,9 @@ export function GtaWorld() {
           className="rounded-full bg-black/50 px-3 py-1 text-center text-xs text-white/90"
         >
           {gender === "female" ? "עולה חדשה" : "עולה חדש"} · {driving ? (taxiRide ? "מונית" : vehicle?.nameHe) : "ברגל"}
+          {" · "}
+          <span data-testid="gta-maggie">{UI.maggie.he}</span>
+          {spot.maggieLine ? ` · ${spot.maggieLine}` : ""}
         </p>
       </div>
 
@@ -518,6 +609,8 @@ function Radar({
   facing,
   nextId,
   wanted,
+  maggieX,
+  maggieY,
 }: {
   map: WorldMap
   x: number
@@ -525,6 +618,8 @@ function Radar({
   facing: number
   nextId: string | null
   wanted: number
+  maggieX: number
+  maggieY: number
 }) {
   const size = 148
   const range = 540
@@ -567,6 +662,15 @@ function Radar({
             }}
           />
         ))}
+        <div
+          className="absolute size-2.5 rounded-sm bg-amber-300 ring-2 ring-zinc-900"
+          data-testid="gta-maggie-blip"
+          style={{
+            left: (maggieX - x + range) * scale,
+            top: (maggieY - y + range) * scale,
+            transform: "translate(-50%, -50%)",
+          }}
+        />
         <div
           className="absolute size-2.5 bg-cyan-300"
           style={{

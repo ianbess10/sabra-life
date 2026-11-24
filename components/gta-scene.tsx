@@ -12,6 +12,7 @@ import {
   type LiveActor,
   type LiveWorld,
 } from "@/lib/world3d"
+import { Maggie } from "@/components/maggie"
 import type { Landmark, WorldMap } from "@/lib/world"
 
 const LOOK = new Vector3()
@@ -51,6 +52,7 @@ export function GtaScene({
       <City map={map} />
       <Crowd live={live} />
       <Player live={live} gender={gender} driving={driving} taxiRide={taxiRide} />
+      <Maggie live={live} />
       <Landmarks map={map} live={live} />
       <FollowCamera live={live} />
     </>

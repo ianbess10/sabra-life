@@ -4,7 +4,7 @@ The oleh chadash test. You land at Ben Gurion with ₪200, pick a Hebrew gender 
 
 The loop is **walk the street → talk to someone → earn shekels and XP → buy a better life on Yad2**.
 
-You are a third-person character in Tel Aviv. WASD (or the stick on a phone) to walk, **E** to talk in the street, **F** to get in a scooter, a car, or the airport taxi, **P** for the phone. Yellow blips are the next oleh mission. The taxi to Rothschild is a real drive: the driver talks while you steer. Bump people and wanted stars come out.
+You are a third-person character in Tel Aviv. **Maggie**, a black Scottish Terrier, heels at your side (מגי on the HUD). WASD (or the stick on a phone) to walk, **E** to talk in the street, **F** to get in a scooter, a car, or the airport taxi, **P** for the phone. Yellow blips are the next oleh mission. The taxi to Rothschild is a real drive: the driver talks while you steer, and Maggie rides along. Bump people and wanted stars come out.
 
 ## The Oleh Test
 
