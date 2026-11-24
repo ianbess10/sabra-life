@@ -25,7 +25,7 @@ export const WELCOME = {
     },
     {
       title: "The street",
-      body: "This is a GTA-style city, not a menu. WASD or the on-screen stick to walk. E talks to whoever you are standing next to. F gets in a scooter or car you bought on Yad2. P opens the phone. Bump pedestrians and the wanted stars come out — cops will chase you.",
+      body: "Third person, like GTA. WASD or the stick to walk the street. E talks in Hebrew without leaving the world. F gets in a Yad2 vehicle, or a taxi at נתב״ג. P opens the phone. The taxi ride to Rothschild is a real drive — the driver keeps talking while you steer. Bump people and wanted stars come out.",
     },
     {
       title: "The Oleh Test",

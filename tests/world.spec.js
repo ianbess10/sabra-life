@@ -8,6 +8,7 @@ test.describe("GTA streets", () => {
   }) => {
     await gotoApp(page, "/")
     await expect(page.getByTestId("gta-world")).toBeVisible()
+    await expect(page.getByTestId("gta-canvas")).toBeVisible()
     await expect(page.getByTestId("gta-player")).toBeVisible()
     await expect(page.getByTestId("gta-radar")).toBeVisible()
     await expect(page.getByTestId("gta-phone")).toBeVisible()

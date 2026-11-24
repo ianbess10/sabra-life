@@ -46,9 +46,19 @@ test.describe("Suite 3: Accumulation & Store", () => {
     expect(state.inventory.vehicle).toBe("korkinet")
     expect(state.shekels).toBe(starting - SCOOTER_PRICE)
 
-    const profileWrite = await waitForSyncWrite(mock, "profiles")
+    const profileWrite = await waitForSyncWrite(
+      mock,
+      "profiles",
+      8_000,
+      (row) => row.shekels === starting - SCOOTER_PRICE
+    )
     expect(profileWrite.row.shekels).toBe(starting - SCOOTER_PRICE)
-    const inventoryWrite = await waitForSyncWrite(mock, "inventory")
+    const inventoryWrite = await waitForSyncWrite(
+      mock,
+      "inventory",
+      8_000,
+      (row) => row.vehicle === "korkinet"
+    )
     expect(inventoryWrite.row.vehicle).toBe("korkinet")
   })
 })

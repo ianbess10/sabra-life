@@ -134,10 +134,11 @@ export async function freezeDate(page, isoLocal) {
   }, isoLocal)
 }
 
-export async function waitForSyncWrite(mock, table, timeout = 8_000) {
+export async function waitForSyncWrite(mock, table, timeout = 8_000, predicate) {
   const started = Date.now()
   while (Date.now() - started < timeout) {
-    const hit = mock.writes.find((entry) => entry.table === table)
+    const hits = mock.writes.filter((entry) => entry.table === table)
+    const hit = predicate ? hits.find((entry) => predicate(entry.row)) : hits.at(-1)
     if (hit) return hit
     await new Promise((resolve) => setTimeout(resolve, 100))
   }

@@ -1,15 +1,18 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from "react"
+import { Canvas } from "@react-three/fiber"
+import { PCFShadowMap } from "three"
 import { toast } from "sonner"
 import { Smartphone } from "lucide-react"
 
 import { GtaPhone } from "@/components/gta-phone"
-import { MissionModal } from "@/components/mission-modal"
+import { GtaScene } from "@/components/gta-scene"
+import { StreetMission } from "@/components/street-mission"
 import { Button } from "@/components/ui/button"
 import { ownedVehicleItem } from "@/lib/catalog"
 import { UI } from "@/lib/copy"
-import { getMission, missionsForCity, nextAvailableMission } from "@/lib/missions"
+import { getMission, nextAvailableMission } from "@/lib/missions"
 import { levelFromXp } from "@/lib/levels"
 import { useGameStore } from "@/lib/store"
 import type { Mission } from "@/lib/types"
@@ -18,7 +21,6 @@ import {
   COP_LINES,
   INTERACT_R,
   PED_LINES,
-  PLAYER_R,
   blocked,
   dist,
   onRoad,
@@ -26,20 +28,9 @@ import {
   type Landmark,
   type WorldMap,
 } from "@/lib/world"
+import type { LiveActor, LiveWorld } from "@/lib/world3d"
 
-type Actor = {
-  id: string
-  kind: "ped" | "cop" | "car"
-  x: number
-  y: number
-  vx: number
-  vy: number
-  color: string
-  line: string | null
-  lineT: number
-  w: number
-  h: number
-}
+type Actor = LiveActor & { lineT: number }
 
 type Stick = { x: number; y: number }
 
@@ -48,7 +39,7 @@ function seedActors(map: WorldMap): Actor[] {
   const pal = ["#e7e5e4", "#fecaca", "#fed7aa", "#fde68a", "#bbf7d0", "#bae6fd", "#ddd6fe"]
   for (let i = 0; i < 26; i++) {
     const road = map.roads[i % map.roads.length]
-    const along = (i * 97) % 1000 / 1000
+    const along = ((i * 97) % 1000) / 1000
     const x = road.w > road.h ? road.x + along * road.w : road.x + road.w * 0.5
     const y = road.h > road.w ? road.y + along * road.h : road.y + road.h * 0.5
     const horiz = road.w > road.h
@@ -68,7 +59,7 @@ function seedActors(map: WorldMap): Actor[] {
   }
   for (let i = 0; i < 8; i++) {
     const road = map.roads[(i * 2) % map.roads.length]
-    const along = (i * 131) % 1000 / 1000
+    const along = ((i * 131) % 1000) / 1000
     const horiz = road.w > road.h
     const x = horiz ? road.x + along * road.w : road.x + 22
     const y = horiz ? road.y + 22 : road.y + along * road.h
@@ -148,21 +139,18 @@ export function GtaWorld() {
   const worldY = useGameStore((state) => state.worldY)
   const welcomeOpen = useGameStore((state) => state.welcomeOpen)
   const setWorldPos = useGameStore((state) => state.setWorldPos)
-  const setWanted = useGameStore((state) => state.setWanted)
   const setInVehicle = useGameStore((state) => state.setInVehicle)
   const penalizeMistake = useGameStore((state) => state.penalizeMistake)
   const map = useMemo(() => worldForCity(location), [location])
   const level = levelFromXp(xp).level
   const next = nextAvailableMission(location, level, completed)
-  const missions = missionsForCity(location)
   const vehicle = ownedVehicleItem(inventory)
+  const [spot, setSpot] = useState({ x: worldX, y: worldY, facing: 0 })
 
   const [phoneOpen, setPhoneOpen] = useState(false)
   const [active, setActive] = useState<Mission | null>(null)
   const [near, setNear] = useState<Landmark | null>(null)
-  const [facing, setFacing] = useState(0)
   const [sprint, setSprint] = useState(false)
-  const [view, setView] = useState({ w: 800, h: 600, x: worldX, y: worldY })
   const keys = useRef(new Set<string>())
   const stick = useRef<Stick>({ x: 0, y: 0 })
   const pos = useRef({ x: worldX, y: worldY })
@@ -170,8 +158,26 @@ export function GtaWorld() {
   const bumpT = useRef(0)
   const wantedT = useRef(0)
   const storeT = useRef(0)
-  const paused = welcomeOpen || phoneOpen || Boolean(active)
+  const hudT = useRef(0)
+  const moving = useRef(false)
+  const facingRef = useRef(0)
+  const taxiRide = active?.id === "bg_taxi"
+  const driving = taxiRide || (inVehicle && Boolean(vehicle) && vehicle?.id !== "rav-kav")
+  const talking = Boolean(active) && !taxiRide
+  const paused = welcomeOpen || phoneOpen || talking
   const frame = useRef<HTMLDivElement>(null)
+  const live = useRef<LiveWorld>({
+    x: worldX,
+    y: worldY,
+    facing: 0,
+    moving: false,
+    driving,
+    taxiRide: Boolean(taxiRide),
+    gender,
+    wanted,
+    nextId: next?.id ?? null,
+    actors: actors.current,
+  })
 
   useEffect(() => {
     pos.current = { x: worldX, y: worldY }
@@ -180,6 +186,7 @@ export function GtaWorld() {
   const cityRef = useRef(location)
   useEffect(() => {
     actors.current = seedActors(map)
+    live.current.actors = actors.current
     if (cityRef.current !== location) {
       cityRef.current = location
       pos.current = { ...map.spawn }
@@ -190,16 +197,6 @@ export function GtaWorld() {
   useEffect(() => {
     document.documentElement.classList.add("gta-mode")
     return () => document.documentElement.classList.remove("gta-mode")
-  }, [])
-
-  useEffect(() => {
-    const node = frame.current
-    if (!node) return
-    const read = () => setView((current) => ({ ...current, w: node.clientWidth, h: node.clientHeight }))
-    read()
-    const observer = new ResizeObserver(read)
-    observer.observe(node)
-    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
@@ -228,8 +225,24 @@ export function GtaWorld() {
     }
   }, [active])
 
+  const playMission = useCallback(
+    (mission: Mission) => {
+      setPhoneOpen(false)
+      if (mission.id === "bg_taxi") {
+        const taxi = map.landmarks.find((item) => item.id === "taxi")
+        if (taxi) {
+          pos.current = { x: taxi.x, y: taxi.y }
+          setWorldPos(taxi.x, taxi.y)
+        }
+        setInVehicle(true)
+      }
+      setActive(mission)
+    },
+    [map.landmarks, setInVehicle, setWorldPos]
+  )
+
   const tryInteract = useCallback(() => {
-    if (paused) return
+    if (paused && !taxiRide) return
     const landmark = near
     if (!landmark) return
     const mission = getMission(landmark.missionId)
@@ -237,16 +250,21 @@ export function GtaWorld() {
       toast.error("עוד לא ברמה הזו.")
       return
     }
-    setActive(mission)
-  }, [level, near, paused])
+    playMission(mission)
+  }, [level, near, paused, playMission, taxiRide])
 
   const tryVehicle = useCallback(() => {
+    if (near?.id === "taxi") {
+      const mission = getMission("bg_taxi")
+      if (mission) playMission(mission)
+      return
+    }
     if (!vehicle || vehicle.id === "rav-kav") {
-      toast.error("אין לך רכב. יד2 מחכה.")
+      toast.error("אין לך רכב. יד2 מחכה — או תעמוד ליד מונית.")
       return
     }
     setInVehicle(!inVehicle)
-  }, [inVehicle, setInVehicle, vehicle])
+  }, [inVehicle, near?.id, playMission, setInVehicle, vehicle])
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -276,19 +294,20 @@ export function GtaWorld() {
           ax /= len
           ay /= len
         }
-        const driving = useGameStore.getState().inVehicle
+        const ride = useGameStore.getState().inVehicle || taxiRide
         const stars = useGameStore.getState().wanted
         let speed = sprint ? 210 : 135
-        if (driving) {
+        if (ride) {
           const id = vehicle?.id
-          speed = id === "tesla" ? 420 : id === "mazda" ? 340 : 260
+          speed = taxiRide ? 300 : id === "tesla" ? 420 : id === "mazda" ? 340 : 260
         }
+        moving.current = len > 0.08
         if (len > 0.08) {
           const nx = pos.current.x + ax * speed * dt
           const ny = pos.current.y + ay * speed * dt
           if (!blocked(map, nx, pos.current.y)) pos.current.x = nx
           if (!blocked(map, pos.current.x, ny)) pos.current.y = ny
-          setFacing(Math.atan2(ay, ax))
+          facingRef.current = Math.atan2(ay, ax)
         }
         bumpT.current -= dt
         wantedT.current += dt
@@ -306,8 +325,8 @@ export function GtaWorld() {
             if (d < 28) {
               const fine = penalizeMistake()
               useGameStore.getState().setWanted(stars - 1)
-              actor.x -= dx / d * 40
-              actor.y -= dy / d * 40
+              actor.x -= (dx / d) * 40
+              actor.y -= (dy / d) * 40
               toast.error(`עצור! −${fine || 5}₪`)
             }
           } else {
@@ -323,7 +342,7 @@ export function GtaWorld() {
           if (bumpT.current <= 0 && dist(actor.x, actor.y, pos.current.x, pos.current.y) < hitR) {
             bumpT.current = 0.7
             if (actor.kind !== "cop") {
-              const nextStars = Math.min(5, useGameStore.getState().wanted + (driving ? 2 : 1))
+              const nextStars = Math.min(5, useGameStore.getState().wanted + (ride ? 2 : 1))
               useGameStore.getState().setWanted(nextStars)
               wantedT.current = 0
               actor.line = actor.kind === "car" ? "תזהר!" : "אוי!"
@@ -344,26 +363,45 @@ export function GtaWorld() {
             closest = landmark
           }
         }
-        setNear(closest)
-        setView((current) => ({ ...current, x: pos.current.x, y: pos.current.y }))
+        hudT.current += dt
+        if (hudT.current > 0.05) {
+          hudT.current = 0
+          setNear(closest)
+          setSpot({ x: pos.current.x, y: pos.current.y, facing: facingRef.current })
+        }
         if (storeT.current > 0.8) {
           storeT.current = 0
           setWorldPos(pos.current.x, pos.current.y)
         }
+      } else {
+        moving.current = false
+      }
+      live.current = {
+        x: pos.current.x,
+        y: pos.current.y,
+        facing: facingRef.current,
+        moving: moving.current,
+        driving,
+        taxiRide: Boolean(taxiRide),
+        gender,
+        wanted: useGameStore.getState().wanted,
+        nextId: next?.id ?? null,
+        actors: actors.current,
       }
       raf = window.requestAnimationFrame(loop)
     }
     raf = window.requestAnimationFrame(loop)
     return () => window.cancelAnimationFrame(raf)
-  }, [map, paused, penalizeMistake, setWorldPos, sprint, vehicle])
+  }, [driving, gender, map, next?.id, paused, penalizeMistake, setWorldPos, sprint, taxiRide, vehicle])
 
-  const camX = Math.max(0, Math.min(map.w - view.w, view.x - view.w / 2))
-  const camY = Math.max(0, Math.min(map.h - view.h, view.y - view.h / 2))
-  const driving = inVehicle && Boolean(vehicle) && vehicle?.id !== "rav-kav"
-
-  function playMission(mission: Mission) {
-    setPhoneOpen(false)
-    setActive(mission)
+  function onMissionFinished(mission: Mission) {
+    if (mission.id !== "bg_taxi") return
+    const cafe = map.landmarks.find((item) => item.id === "cafe")
+    if (cafe) {
+      pos.current = { x: cafe.x, y: cafe.y }
+      setWorldPos(cafe.x, cafe.y)
+    }
+    if (!vehicle || vehicle.id === "rav-kav") setInVehicle(false)
   }
 
   return (
@@ -373,214 +411,42 @@ export function GtaWorld() {
       data-testid="gta-world"
       tabIndex={0}
     >
-      <div
-        dir="ltr"
-        className="absolute top-0 left-0 origin-top-left will-change-transform"
-        style={{
-          width: map.w,
-          height: map.h,
-          transform: `translate(${-camX}px, ${-camY}px)`,
-        }}
-      >
-        <div className="absolute inset-0 bg-[#2f6b46]" />
-        {map.sea ? (
-          <div
-            className="absolute bg-[#1d4e89]"
-            style={{ left: map.sea.x, top: map.sea.y, width: map.sea.w, height: map.sea.h }}
-          />
-        ) : null}
-        {map.sand ? (
-          <div
-            className="absolute bg-[#e4c68a]"
-            style={{ left: map.sand.x, top: map.sand.y, width: map.sand.w, height: map.sand.h }}
-          />
-        ) : null}
-        {map.parks.map((park, index) => (
-          <div
-            key={`park-${index}`}
-            className="absolute bg-[#3f7d4e]"
-            style={{ left: park.x, top: park.y, width: park.w, height: park.h }}
-          />
-        ))}
-        {map.roads.map((road, index) => (
-          <div
-            key={`road-${index}`}
-            className="absolute bg-[#3f3f46]"
-            style={{ left: road.x, top: road.y, width: road.w, height: road.h }}
-          >
-            <div
-              className="absolute bg-[repeating-linear-gradient(to_right,transparent_0_18px,#facc15_18px_34px)]"
-              style={
-                road.w > road.h
-                  ? { left: 8, top: "50%", height: 3, width: "calc(100% - 16px)", transform: "translateY(-50%)" }
-                  : {
-                      left: "50%",
-                      top: 8,
-                      width: 3,
-                      height: "calc(100% - 16px)",
-                      transform: "translateX(-50%)",
-                      background: "repeating-linear-gradient(to bottom, transparent 0 18px, #facc15 18px 34px)",
-                    }
-              }
-            />
-          </div>
-        ))}
-        {map.buildings.map((building, index) => (
-          <div
-            key={`b-${index}`}
-            className="absolute overflow-hidden shadow-[0_8px_0_rgba(0,0,0,0.18)]"
-            style={{
-              left: building.x,
-              top: building.y,
-              width: building.w,
-              height: building.h,
-              background: building.fill,
-            }}
-          >
-            <div
-              className="h-2 w-full"
-              style={{ background: building.roof ?? "#7f1d1d" }}
-            />
-            <div className="absolute inset-x-2 top-4 grid grid-cols-4 gap-1 opacity-35">
-              {Array.from({ length: 8 }, (_, window) => (
-                <span key={window} className="h-2 rounded-[1px] bg-[#1e293b]" />
-              ))}
-            </div>
-            {building.label ? (
-              <p dir="rtl" className="relative px-2 pt-8 font-heading text-[11px] leading-tight text-zinc-800">
-                {building.label}
-              </p>
-            ) : null}
-          </div>
-        ))}
-
-        {map.landmarks.map((landmark) => {
-          const mission = missions.find((item) => item.id === landmark.missionId)
-          const done = completed.includes(landmark.missionId)
-          const isNext = next?.id === landmark.missionId
-          return (
-            <div
-              key={landmark.id}
-              className="absolute"
-              style={{ left: landmark.x, top: landmark.y, transform: "translate(-50%, -50%)" }}
-            >
-              {isNext ? (
-                <div className="absolute left-1/2 top-[-22px] size-3 -translate-x-1/2 animate-bounce rounded-full bg-yellow-400 shadow-[0_0_12px_#facc15]" />
-              ) : null}
-              <div
-                className={cn(
-                  "flex size-10 items-center justify-center rounded-full border-2 border-white/80 shadow-md",
-                  done && "opacity-50"
-                )}
-                style={{ background: landmark.color }}
-              >
-                <span className="font-heading text-[10px] text-white">
-                  {landmark.nameHe.slice(0, 1)}
-                </span>
-              </div>
-              <p dir="rtl" className="mt-1 whitespace-nowrap text-center text-[10px] font-medium text-white drop-shadow">
-                {landmark.nameHe}
-              </p>
-              {mission && near?.id === landmark.id ? (
-                <p
-                  dir="rtl"
-                  className="absolute left-1/2 top-full mt-6 -translate-x-1/2 whitespace-nowrap rounded bg-black/70 px-2 py-0.5 text-[10px] text-yellow-300"
-                >
-                  E · {mission.title}
-                </p>
-              ) : null}
-            </div>
-          )
-        })}
-
-        {actors.current.map((actor) => (
-          <div
-            key={actor.id}
-            className="absolute"
-            style={{
-              left: actor.x,
-              top: actor.y,
-              transform: "translate(-50%, -50%)",
-            }}
-          >
-            {actor.kind === "car" ? (
-              <div
-                className="rounded-[3px] border border-black/30 shadow"
-                style={{ width: actor.w, height: actor.h, background: actor.color }}
-              />
-            ) : (
-              <div className="relative h-7 w-5">
-                <div
-                  className="absolute bottom-0 left-1/2 h-4 w-3.5 -translate-x-1/2 rounded-[5px]"
-                  style={{ background: actor.kind === "cop" ? "#1d4ed8" : actor.color }}
-                />
-                <div
-                  className="absolute left-1/2 top-0 size-3 -translate-x-1/2 rounded-full border border-white/70"
-                  style={{ background: actor.kind === "cop" ? "#93c5fd" : "#fde68a" }}
-                />
-              </div>
-            )}
-            {actor.line ? (
-              <span
-                dir="rtl"
-                className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-white px-1.5 py-0.5 text-[10px] text-zinc-900 shadow"
-              >
-                {actor.line}
-              </span>
-            ) : null}
-          </div>
-        ))}
-
-        <div
-          className="absolute z-10"
-          data-testid="gta-player"
-          style={{
-            left: view.x,
-            top: view.y,
-            transform: `translate(-50%, -50%) rotate(${facing + Math.PI / 2}rad)`,
+      <div dir="ltr" className="absolute inset-0" data-testid="gta-canvas">
+        <Canvas
+          shadows
+          dpr={[1, 1.5]}
+          camera={{ fov: 55, near: 0.1, far: 420, position: [40, 12, 48] }}
+          gl={{ antialias: true, alpha: false }}
+          onCreated={({ gl }) => {
+            gl.shadowMap.enabled = true
+            gl.shadowMap.type = PCFShadowMap
           }}
         >
-          {driving ? (
-            <div className="relative">
-              <div className="absolute left-1/2 top-1/2 h-8 w-12 -translate-x-1/2 -translate-y-1/2 rounded-sm bg-black/40 blur-[2px]" />
-              <div
-                className="relative h-7 w-11 rounded-[4px] border border-white/50 shadow-lg"
-                style={{ background: vehicle?.id === "tesla" ? "#f8fafc" : "#1e293b" }}
-              >
-                <div className="absolute inset-x-1 top-0.5 h-2 rounded-sm bg-sky-300/70" />
-                <div className="absolute bottom-0.5 left-0.5 size-2 rounded-full bg-amber-300" />
-                <div className="absolute right-0.5 bottom-0.5 size-2 rounded-full bg-red-400" />
-              </div>
-            </div>
-          ) : (
-            <div className="relative h-12 w-9">
-              <div className="absolute left-1/2 top-1/2 size-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/35 blur-[2px]" />
-              <div
-                className="absolute left-1/2 bottom-0 h-7 w-5 -translate-x-1/2 rounded-[7px] border-2 border-white shadow-md"
-                style={{ background: gender === "female" ? "#fb7185" : "#22d3ee" }}
-              />
-              <div
-                className="absolute left-1/2 top-0 size-5 -translate-x-1/2 rounded-full border-2 border-white"
-                style={{ background: gender === "female" ? "#fecdd3" : "#fde68a" }}
-              />
-              <div className="absolute left-1/2 top-[-8px] h-2.5 w-2 -translate-x-1/2 rounded-sm bg-white" />
-            </div>
-          )}
-        </div>
+          <GtaScene
+            map={map}
+            live={live}
+            gender={gender}
+            driving={Boolean(driving)}
+            taxiRide={Boolean(taxiRide)}
+          />
+        </Canvas>
       </div>
 
       <Radar
         map={map}
-        x={view.x}
-        y={view.y}
-        facing={facing}
+        x={spot.x}
+        y={spot.y}
+        facing={spot.facing}
         nextId={next?.id ?? null}
         wanted={wanted}
       />
 
       <div className="pointer-events-none absolute top-3 left-1/2 z-20 -translate-x-1/2">
-        <p className="rounded-full bg-black/50 px-3 py-1 text-center text-xs text-white/90">
-          {gender === "female" ? "עולה חדשה" : "עולה חדש"} · {driving ? vehicle?.nameHe : "ברגל"}
+        <p
+          data-testid="gta-player"
+          className="rounded-full bg-black/50 px-3 py-1 text-center text-xs text-white/90"
+        >
+          {gender === "female" ? "עולה חדשה" : "עולה חדש"} · {driving ? (taxiRide ? "מונית" : vehicle?.nameHe) : "ברגל"}
         </p>
       </div>
 
@@ -628,18 +494,18 @@ export function GtaWorld() {
         </Button>
       ) : null}
 
-      <GtaPhone
-        open={phoneOpen}
-        onClose={() => setPhoneOpen(false)}
-        onPlayMission={playMission}
-      />
+      <GtaPhone open={phoneOpen} onClose={() => setPhoneOpen(false)} onPlayMission={playMission} />
 
-      <MissionModal
+      <StreetMission
         mission={active}
         open={Boolean(active)}
         onOpenChange={(open) => {
-          if (!open) setActive(null)
+          if (!open) {
+            setActive(null)
+            if (taxiRide && (!vehicle || vehicle.id === "rav-kav")) setInVehicle(false)
+          }
         }}
+        onFinished={onMissionFinished}
       />
     </div>
   )
@@ -667,13 +533,7 @@ function Radar({
     <div className="absolute bottom-4 left-4 z-20" data-testid="gta-radar">
       <div className="mb-1 flex justify-center gap-0.5">
         {Array.from({ length: 5 }, (_, index) => (
-          <span
-            key={index}
-            className={cn(
-              "text-sm",
-              index < wanted ? "text-yellow-300" : "text-white/20"
-            )}
-          >
+          <span key={index} className={cn("text-sm", index < wanted ? "text-yellow-300" : "text-white/20")}>
             ★
           </span>
         ))}
@@ -723,16 +583,14 @@ function Radar({
 
 function Joystick({ onMove }: { onMove: (x: number, y: number) => void }) {
   const pad = useRef<HTMLDivElement>(null)
-  function point(event: React.PointerEvent) {
+  function point(event: PointerEvent<HTMLDivElement>) {
     const node = pad.current
     if (!node) return
     const box = node.getBoundingClientRect()
-    const x = (event.clientX - box.left) / box.width * 2 - 1
-    const y = (event.clientY - box.top) / box.height * 2 - 1
-    const len = Math.hypot(x, y) || 1
-    const nx = x / (len > 1 ? len : 1)
-    const ny = y / (len > 1 ? len : 1)
-    onMove(nx, ny)
+    const px = ((event.clientX - box.left) / box.width) * 2 - 1
+    const py = ((event.clientY - box.top) / box.height) * 2 - 1
+    const len = Math.hypot(px, py) || 1
+    onMove(px / (len > 1 ? len : 1), py / (len > 1 ? len : 1))
   }
   return (
     <div

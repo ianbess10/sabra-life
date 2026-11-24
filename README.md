@@ -4,7 +4,7 @@ The oleh chadash test. You land at Ben Gurion with ₪200, pick a Hebrew gender 
 
 The loop is **walk the street → talk to someone → earn shekels and XP → buy a better life on Yad2**.
 
-You are a character in Tel Aviv. WASD (or the stick on a phone) to walk, **E** to talk, **F** to get in a scooter or car, **P** for the phone. Yellow blips are the next oleh mission. Bump people and wanted stars come out.
+You are a third-person character in Tel Aviv. WASD (or the stick on a phone) to walk, **E** to talk in the street, **F** to get in a scooter, a car, or the airport taxi, **P** for the phone. Yellow blips are the next oleh mission. The taxi to Rothschild is a real drive: the driver talks while you steer. Bump people and wanted stars come out.
 
 ## The Oleh Test
 
@@ -56,8 +56,8 @@ Client helpers live at `utils/supabase/client.ts` and `utils/supabase/server.ts`
 
 The first visit opens a beta briefing that asks for your gender profile. Reopen it anytime from **מדריך** in the HUD.
 
-1. You spawn at Ben Gurion. Walk. The first NPC is passport control. Open the phone (P) to pick any mission from the oleh test.
-2. Each mission is a full-screen dialogue: a scene, a spoken Hebrew line, reply chips, phrase `n/N`.
+1. You spawn at Ben Gurion in third person. Walk up to passport control. Open the phone (P) to pick any mission from the oleh test.
+2. Talking happens in the street: a spoken Hebrew line, reply chips, phrase `n/N`, the city still behind you. After the taxi fare, you drive toward Rothschild.
 3. Spend shekels on Yad2: Rav-Kav, scooter, apartment, phone, dining.
 4. Hit Ulpan Bet (level 2) to unlock Jerusalem, Ulpan Dalet (level 4) for Raanana.
 5. Travel between cities costs ₪15 on public transit unless you own a Mazda or Tesla. A scooter does not leave Tel Aviv.
