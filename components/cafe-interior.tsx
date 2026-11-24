@@ -9,13 +9,10 @@ export function CafeInterior() {
   const counter = CAFE.counter
   return (
     <group>
-      <color attach="background" args={["#1a0e14"]} />
-      <fog attach="fog" args={["#2a1810", 12, 38]} />
-      <hemisphereLight args={["#ffe2c4", "#5c3a28", 1.05]} />
-      <ambientLight intensity={0.72} />
-      <pointLight position={[sx(80), 4.2, sx(58)]} color="#ffc58a" intensity={3.2} distance={28} />
-      <pointLight position={[sx(40), 3.2, sx(30)]} color="#fde68a" intensity={1.8} distance={16} />
-      <pointLight position={[sx(130), 3.4, sx(58)]} color="#fff1d6" intensity={2.2} distance={14} />
+      <color attach="background" args={["#e8d7c4"]} />
+      <hemisphereLight args={["#fff6ea", "#8a7460", 0.9]} />
+      <ambientLight intensity={0.85} />
+      <directionalLight position={[sx(80), 6, sx(40)]} color="#fff4e5" intensity={0.9} />
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[sx(CAFE.w / 2), 0, sx(CAFE.h / 2)]} receiveShadow>
         <planeGeometry args={[floorW + 2, floorD + 2]} />

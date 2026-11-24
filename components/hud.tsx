@@ -172,17 +172,19 @@ export function Hud() {
             <BookOpen data-icon="inline-start" />
             {UI.howToPlay.he}
           </Button>
-          <Button
-            variant={leaderboardOpen ? "secondary" : "outline"}
-            size="sm"
-            onPointerDown={(event) => event.stopPropagation()}
-            onClick={() => setLeaderboardOpen((open) => !open)}
-            title={UI.leaderboard.he}
-            aria-pressed={leaderboardOpen}
-          >
-            <Trophy data-icon="inline-start" />
-            {UI.leaderboard.he}
-          </Button>
+          {streets ? null : (
+            <Button
+              variant={leaderboardOpen ? "secondary" : "outline"}
+              size="sm"
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={() => setLeaderboardOpen((open) => !open)}
+              title={UI.leaderboard.he}
+              aria-pressed={leaderboardOpen}
+            >
+              <Trophy data-icon="inline-start" />
+              {UI.leaderboard.he}
+            </Button>
+          )}
           {user ? (
             <Button
               variant="outline"

@@ -98,11 +98,8 @@ function StreetSession({
   }, [overlayId, overlayLines, setOverlay])
 
   useEffect(() => {
-    if (celebrating || !hebrew) return
-    void speak(hebrew)
-    // Auto-play each phrase like the driving trainer.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentNodeId, celebrating])
+    return () => stop()
+  }, [stop])
 
   function pickOption(option: MissionOption) {
     if (celebrating) return

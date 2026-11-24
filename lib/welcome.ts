@@ -25,7 +25,7 @@ export const WELCOME = {
     },
     {
       title: "The street",
-      body: "Third person, dusk over Tel Aviv. WASD or the stick to walk Hayarkon. Maggie heels at your side. E at the café is a door — you walk in, then order at the counter. F in a Yad2 car: blue-and-white pays Pango, red-and-white or the sidewalk is a ticket. Drive through a red רמזור and you get a Hebrew ticket. The film button plays a 20-second trailer of that fail, shot in this city. P opens the phone. The taxi to Rothschild is a real drive. Bump people and wanted stars come out.",
+      body: "You land at Ben Gurion on foot. WASD or the stick to walk. E talks to whoever is in front of you — at the café that is a door, then order at the counter. F gets in a Yad2 car: blue-and-white pays Pango, a sidewalk or a red ramzor is a ticket. P opens the phone. Maggie heels at your side. English costs shekels.",
     },
     {
       title: "The Oleh Test",

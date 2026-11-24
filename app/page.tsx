@@ -9,7 +9,7 @@ const GtaWorld = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex flex-1 items-center justify-center bg-[#14081f] text-orange-100">
+      <div className="flex flex-1 items-center justify-center bg-[#c5d0dc] text-slate-700">
         <p className="font-heading text-xl">{UI.loading.he}</p>
       </div>
     ),

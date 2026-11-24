@@ -196,8 +196,8 @@ export function buildTelAviv(): WorldMap {
   const parked: ParkedCar[] = []
   const stalls: Stall[] = []
   const hayarkon = vx[0]
-  for (let i = 0; i < 18; i++) {
-    const y = 110 + i * 108
+  for (let i = 0; i < 7; i++) {
+    const y = 160 + i * 250
     const west = i % 2 === 0
     parked.push({
       x: west ? hayarkon + 16 : hayarkon + ROAD_W - 16,
@@ -237,7 +237,7 @@ export function buildTelAviv(): WorldMap {
     id: "tel-aviv",
     w,
     h,
-    spawn: { x: airport.x - 40, y: airport.y },
+    spawn: { x: airport.x, y: airport.y + 36 },
     sea: { x: 0, y: 0, w: 200, h },
     sand: { x: 200, y: 0, w: 50, h },
     parks,

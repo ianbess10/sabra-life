@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, type MutableRefObject, type ReactNode } fro
 import { useFrame } from "@react-three/fiber"
 import type { Group, Mesh, MeshStandardMaterial } from "three"
 import {
-  BackSide,
   CanvasTexture,
   Color,
   MathUtils,
@@ -26,23 +25,6 @@ import type { Landmark, ParkedCar, WorldMap } from "@/lib/world"
 const LOOK = new Vector3()
 const CAM = new Vector3()
 const E2E = process.env.NEXT_PUBLIC_E2E === "1"
-
-const SIGN_NEON: Record<string, string> = {
-  קפה: "#fb923c",
-  בנק: "#2dd4bf",
-  "קופ״ח": "#38bdf8",
-  שוק: "#fb7185",
-  אולפן: "#818cf8",
-  סופר: "#a3e635",
-  מלון: "#f472b6",
-  דירות: "#fbbf24",
-  השכרה: "#94a3b8",
-  דלק: "#fb923c",
-  תחנה: "#4ade80",
-  רישוי: "#facc15",
-  מוניות: "#facc15",
-  "נתב״ג": "#7dd3fc",
-}
 
 export function GtaScene({
   map,
@@ -66,25 +48,11 @@ export function GtaScene({
         <CafeInterior />
       ) : (
         <>
-          <color attach="background" args={["#14081f"]} />
-          <fog attach="fog" args={["#4a2048", 55, 210]} />
-          <DuskSky />
-          <hemisphereLight args={["#ffb089", "#2a1840", 0.85]} />
-          <ambientLight intensity={0.32} />
-          <directionalLight
-            castShadow={!E2E}
-            color="#ff9a62"
-            position={[-70, 28, 24]}
-            intensity={1.85}
-            shadow-mapSize={[1024, 1024]}
-            shadow-camera-far={220}
-            shadow-camera-left={-80}
-            shadow-camera-right={80}
-            shadow-camera-top={80}
-            shadow-camera-bottom={-80}
-          />
-          <pointLight position={[-88, 20, 30]} color="#ff6a30" intensity={2.8} distance={260} />
-          <pointLight position={[20, 18, 40]} color="#c4b5fd" intensity={0.7} distance={180} />
+          <color attach="background" args={["#b7c6d6"]} />
+          <fog attach="fog" args={["#c5d0dc", 90, 260]} />
+          <hemisphereLight args={["#eef3f8", "#9aa090", 1.05]} />
+          <ambientLight intensity={0.78} />
+          <directionalLight color="#fff6e8" position={[36, 48, 22]} intensity={1.05} />
           <City map={map} live={live} />
           <Crowd live={live} />
           <Landmarks map={map} live={live} />
@@ -97,46 +65,8 @@ export function GtaScene({
   )
 }
 
-function DuskSky() {
-  return (
-    <group>
-      <mesh>
-        <sphereGeometry args={[380, 24, 16]} />
-        <shaderMaterial
-          side={BackSide}
-          depthWrite={false}
-          vertexShader={`
-            varying vec3 vPos;
-            void main() {
-              vPos = position;
-              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-            }
-          `}
-          fragmentShader={`
-            varying vec3 vPos;
-            void main() {
-              float h = normalize(vPos).y;
-              vec3 bottom = vec3(0.98, 0.38, 0.16);
-              vec3 mid = vec3(0.52, 0.12, 0.38);
-              vec3 top = vec3(0.07, 0.04, 0.18);
-              vec3 col = mix(bottom, mid, smoothstep(-0.2, 0.18, h));
-              col = mix(col, top, smoothstep(0.12, 0.72, h));
-              gl_FragColor = vec4(col, 1.0);
-            }
-          `}
-        />
-      </mesh>
-      <mesh position={[-110, 22, 36]}>
-        <sphereGeometry args={[9.5, 16, 16]} />
-        <meshBasicMaterial color="#ff7a3c" toneMapped={false} />
-      </mesh>
-    </group>
-  )
-}
-
 function City({ map, live }: { map: WorldMap; live: MutableRefObject<LiveWorld> }) {
   const extent = useMemo(() => ({ w: sx(map.w), d: sx(map.h) }), [map.h, map.w])
-  const hayarkon = map.roads.find((road) => road.name === "hayarkon")
   const ramzors = useMemo(() => hayarkonRamzors(map), [map])
   const palms = useMemo(() => {
     if (!map.sand) return [] as { x: number; z: number }[]
@@ -149,23 +79,11 @@ function City({ map, live }: { map: WorldMap; live: MutableRefObject<LiveWorld> 
     }
     return list
   }, [map.sand])
-  const lamps = useMemo(() => {
-    if (!hayarkon) return [] as { x: number; z: number }[]
-    const list: { x: number; z: number }[] = []
-    for (let i = 0; i < 8; i++) {
-      list.push({
-        x: sx(hayarkon.x + hayarkon.w + 8),
-        z: sx(60 + i * 240),
-      })
-    }
-    return list
-  }, [hayarkon])
-
   return (
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[extent.w / 2, -0.02, extent.d / 2]} receiveShadow>
         <planeGeometry args={[extent.w + 40, extent.d + 40]} />
-        <meshStandardMaterial color="#2a4634" roughness={0.95} />
+        <meshStandardMaterial color="#7a9a6e" roughness={0.95} />
       </mesh>
       {map.sea ? (
         <mesh
@@ -173,7 +91,7 @@ function City({ map, live }: { map: WorldMap; live: MutableRefObject<LiveWorld> 
           position={[sx(map.sea.x + map.sea.w / 2), -0.04, sx(map.sea.y + map.sea.h / 2)]}
         >
           <planeGeometry args={[sx(map.sea.w), sx(map.sea.h)]} />
-          <meshStandardMaterial color="#0b3a62" roughness={0.08} metalness={0.85} emissive="#0a2744" emissiveIntensity={0.35} />
+          <meshStandardMaterial color="#4a7ca8" roughness={0.35} />
         </mesh>
       ) : null}
       {map.sand ? (
@@ -220,7 +138,7 @@ function City({ map, live }: { map: WorldMap; live: MutableRefObject<LiveWorld> 
               position={[sx(road.x + road.w / 2), 0.045, sx(road.y + road.h / 2)]}
             >
               <planeGeometry args={horiz ? [sx(road.w) * 0.92, 0.1] : [0.1, sx(road.h) * 0.92]} />
-              <meshStandardMaterial color="#f5c518" emissive="#a16207" emissiveIntensity={0.35} />
+              <meshStandardMaterial color="#d6c27a" />
             </mesh>
             {!E2E && hayarkonRoad ? <HayarkonCurb road={road} /> : null}
           </group>
@@ -229,33 +147,19 @@ function City({ map, live }: { map: WorldMap; live: MutableRefObject<LiveWorld> 
       {map.buildings.map((building, index) => {
         const h = buildingHeight(building.label, index)
         const pos = to3(building.x + building.w / 2, building.y + building.h / 2, h / 2)
-        const neon = building.label ? SIGN_NEON[building.label] : undefined
         return (
           <group key={`b-${index}`} position={pos}>
-            <mesh castShadow receiveShadow>
+            <mesh>
               <boxGeometry args={[sx(building.w), h, sx(building.h)]} />
-              <meshStandardMaterial
-                color={building.fill}
-                roughness={building.label === "מלון" ? 0.28 : 0.72}
-                metalness={building.label === "מלון" ? 0.45 : 0.08}
-              />
+              <meshStandardMaterial color={building.fill} roughness={0.82} />
             </mesh>
             <mesh position={[0, h / 2 + 0.12, 0]}>
               <boxGeometry args={[sx(building.w) * 0.96, 0.24, sx(building.h) * 0.96]} />
               <meshStandardMaterial color={building.roof ?? "#7f1d1d"} />
             </mesh>
-            {E2E ? null : (
-              <Windows
-                width={sx(building.w)}
-                depth={sx(building.h)}
-                height={h}
-                seed={index}
-                hotel={building.label === "מלון" || building.label === "דירות"}
-              />
-            )}
-            {!E2E && building.label && neon ? (
-              <group position={[0, h * 0.18, sx(building.h) / 2 + 0.08]}>
-                <NeonSign text={building.label} color={neon} width={Math.min(6.4, sx(building.w) * 0.7)} />
+            {building.label ? (
+              <group position={[0, 1.1, sx(building.h) / 2 + 0.08]}>
+                <NeonSign text={building.label} color="#f8fafc" width={Math.min(5.2, sx(building.w) * 0.62)} />
               </group>
             ) : null}
           </group>
@@ -264,17 +168,7 @@ function City({ map, live }: { map: WorldMap; live: MutableRefObject<LiveWorld> 
       {E2E
         ? null
         : map.parked.map((car, index) => <ParkedMesh key={`parked-${index}`} car={car} />)}
-      {E2E ? null : palms.map((palm, index) => <Palm key={`palm-${index}`} x={palm.x} z={palm.z} />)}
-      {E2E
-        ? null
-        : lamps.map((lamp, index) => (
-            <StreetLamp key={`lamp-${index}`} x={lamp.x} z={lamp.z} lit={index % 5 === 0} />
-          ))}
-      {!E2E && hayarkon ? (
-        <group position={[sx(hayarkon.x + hayarkon.w + 6), 3.4, sx(420)]}>
-          <NeonSign text="רחוב הירקון" color="#fb7185" width={8.2} />
-        </group>
-      ) : null}
+      {E2E ? null : palms.slice(0, 4).map((palm, index) => <Palm key={`palm-${index}`} x={palm.x} z={palm.z} />)}
       {ramzors.map((light) => (
         <group key={light.id}>
           {E2E ? null : <Crosswalk stop={light.stop} />}
@@ -532,16 +426,16 @@ function FollowCamera({ live }: { live: MutableRefObject<LiveWorld> }) {
     const world = live.current
     const [px, , pz] = to3(world.x, world.y)
     const cafe = world.interior === "cafe"
-    const back = cafe ? 5.6 : world.driving ? 15.5 : 8.6
-    const height = cafe ? 3.1 : world.driving ? 7.2 : 4.35
+    const back = cafe ? 5.2 : world.driving ? 12 : 7.4
+    const height = cafe ? 2.8 : world.driving ? 5.6 : 3.9
     const yaw = world.facing
-    const side = cafe ? 0.35 : world.driving ? 0.8 : 1.55
+    const side = cafe ? 0.2 : world.driving ? 0.4 : 0.9
     CAM.set(
       px - Math.cos(yaw) * back + Math.cos(yaw + Math.PI / 2) * side,
       height,
       pz - Math.sin(yaw) * back + Math.sin(yaw + Math.PI / 2) * side
     )
-    const k = 1 - Math.exp(-dt * (world.trailer ? 2.2 : 4.8))
+    const k = 1 - Math.exp(-dt * 7.2)
     state.camera.position.lerp(CAM, k)
     LOOK.set(px + Math.cos(yaw) * (cafe ? 2.2 : 3.6), cafe ? 1.2 : world.driving ? 1.15 : 1.4, pz + Math.sin(yaw) * (cafe ? 2.2 : 3.6))
     state.camera.lookAt(LOOK)
@@ -572,7 +466,6 @@ function Player({
   })
   return (
     <group ref={group}>
-      <pointLight position={[0, 1.6, 0.4]} intensity={1.15} distance={6.5} color="#ffd7a8" />
       <PlayerBody live={live} gender={gender} driving={driving} taxiRide={taxiRide} />
     </group>
   )
@@ -765,14 +658,8 @@ function LandmarkMarker({
 }) {
   const glow = useRef<Mesh>(null)
   const parked = useRef<Group>(null)
-  useFrame((state) => {
-    if (glow.current) {
-      const isNext = live.current.nextId === landmark.missionId
-      glow.current.visible = isNext
-      if (isNext) {
-        glow.current.position.y = 3.4 + Math.sin(state.clock.elapsedTime * 4) * 0.28
-      }
-    }
+  useFrame(() => {
+    if (glow.current) glow.current.visible = live.current.nextId === landmark.missionId
     if (parked.current) parked.current.visible = !live.current.taxiRide
   })
   const [x, , z] = to3(landmark.x, landmark.y)
@@ -798,7 +685,7 @@ function LandmarkMarker({
       )}
       <mesh ref={glow} position={[0, 3.4, 0]} rotation={[Math.PI, 0, 0]}>
         <coneGeometry args={[0.22, 0.55, 8]} />
-        <meshStandardMaterial color="#facc15" emissive="#facc15" emissiveIntensity={2} />
+        <meshStandardMaterial color="#eab308" />
       </mesh>
     </group>
   )

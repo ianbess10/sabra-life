@@ -25,12 +25,9 @@ test.describe("GTA streets", () => {
     await expect(page.getByText("שלום, דרכון בבקשה. עלייה?")).toBeVisible()
   })
 
-  test("dusk sting sells GTA Tel Aviv, then Hayarkon parking is a Hebrew lesson", async ({
-    page,
-  }) => {
+  test("Hayarkon parking is a Hebrew lesson, not a trailer", async ({ page }) => {
     await gotoApp(page, "/")
-    await expect(page.getByTestId("dusk-sting-title")).toHaveText("GTA תל אביב")
-    await expect(page.getByTestId("dusk-sting")).toContainText("חניה ברחוב הירקון")
+    await expect(page.getByTestId("parking-trailer")).toHaveCount(0)
     await page.getByTestId("gta-phone").click()
     await page
       .getByTestId("mission-ta_parking")

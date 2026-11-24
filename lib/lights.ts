@@ -18,7 +18,7 @@ export function hayarkonRamzors(map: WorldMap): Ramzor[] {
   const road = map.roads.find((item) => item.name === "hayarkon")
   if (!road) return []
   const crossings = map.roads.filter((item) => item.w > item.h)
-  return crossings.map((cross, index) => ({
+  return crossings.slice(1, 4).map((cross, index) => ({
     id: `ramzor-${index}`,
     index,
     x: road.x + road.w + 12,

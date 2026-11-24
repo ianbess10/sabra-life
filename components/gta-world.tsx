@@ -2,17 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from "react"
 import { Canvas } from "@react-three/fiber"
-import { ACESFilmicToneMapping, PCFShadowMap, SRGBColorSpace } from "three"
+import { ACESFilmicToneMapping, SRGBColorSpace } from "three"
 import { toast } from "sonner"
-import { Film, Smartphone, Volume2, VolumeX } from "lucide-react"
+import { Film, Smartphone } from "lucide-react"
 
-import { DuskSting } from "@/components/dusk-sting"
 import { GtaPhone } from "@/components/gta-phone"
 import { GtaScene } from "@/components/gta-scene"
 import { ParkingTrailer } from "@/components/parking-trailer"
 import { StreetMission } from "@/components/street-mission"
 import { Button } from "@/components/ui/button"
-import { useStreetAudio } from "@/hooks/use-street-audio"
 import { CAFE, cafeBlocked, nearBarista, nearCafeDoor } from "@/lib/interior"
 import {
   hayarkonRamzors,
@@ -33,8 +31,6 @@ import { cn } from "@/lib/utils"
 import {
   COP_LINES,
   INTERACT_R,
-  MAGGIE_LINES,
-  PED_LINES,
   blocked,
   dist,
   onRoad,
@@ -51,7 +47,7 @@ type Stick = { x: number; y: number }
 function seedActors(map: WorldMap): Actor[] {
   const actors: Actor[] = []
   const pal = ["#e7e5e4", "#fecaca", "#fed7aa", "#fde68a", "#bbf7d0", "#bae6fd", "#ddd6fe"]
-  for (let i = 0; i < 26; i++) {
+  for (let i = 0; i < 8; i++) {
     const road = map.roads[i % map.roads.length]
     const along = ((i * 97) % 1000) / 1000
     const x = road.w > road.h ? road.x + along * road.w : road.x + road.w * 0.5
@@ -71,9 +67,9 @@ function seedActors(map: WorldMap): Actor[] {
       h: 16,
     })
   }
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 3; i++) {
     const hayarkon = map.roads.find((road) => road.name === "hayarkon")
-    const road = i < 6 && hayarkon ? hayarkon : map.roads[(i * 2) % map.roads.length]
+    const road = i < 2 && hayarkon ? hayarkon : map.roads[(i * 2) % map.roads.length]
     const along = ((i * 131) % 1000) / 1000
     const horiz = road.w > road.h
     const x = horiz ? road.x + along * road.w : road.x + 22
@@ -92,34 +88,19 @@ function seedActors(map: WorldMap): Actor[] {
       h: horiz ? 16 : 28,
     })
   }
-  actors.push(
-    {
-      id: "cop-a",
-      kind: "cop",
-      x: map.landmarks.find((item) => item.id === "cop")?.x ?? map.spawn.x,
-      y: map.landmarks.find((item) => item.id === "cop")?.y ?? map.spawn.y,
-      vx: 0,
-      vy: 0,
-      color: "#1d4ed8",
-      line: null,
-      lineT: 0,
-      w: 14,
-      h: 14,
-    },
-    {
-      id: "cop-b",
-      kind: "cop",
-      x: map.spawn.x + 160,
-      y: map.spawn.y,
-      vx: 0,
-      vy: 0,
-      color: "#1e3a8a",
-      line: null,
-      lineT: 0,
-      w: 14,
-      h: 14,
-    }
-  )
+  actors.push({
+    id: "cop-a",
+    kind: "cop",
+    x: map.landmarks.find((item) => item.id === "cop")?.x ?? map.spawn.x,
+    y: map.landmarks.find((item) => item.id === "cop")?.y ?? map.spawn.y,
+    vx: 0,
+    vy: 0,
+    color: "#1d4ed8",
+    line: null,
+    lineT: 0,
+    w: 14,
+    h: 14,
+  })
   return actors
 }
 
@@ -156,10 +137,7 @@ function heelMaggie(
   if (maggie.moving) maggie.facing = Math.atan2(ty - maggie.y, tx - maggie.x) || maggie.facing
   maggie.lineT -= dt
   if (maggie.lineT <= 0) maggie.line = null
-  if (playerMoving && Math.random() < 0.004) {
-    maggie.line = MAGGIE_LINES[Math.floor(Math.random() * MAGGIE_LINES.length)]
-    maggie.lineT = 1.8
-  }
+  maggie.line = null
 }
 
 function moveActor(map: WorldMap, actor: Actor, dt: number) {
@@ -212,12 +190,10 @@ export function GtaWorld() {
   const [active, setActive] = useState<Mission | null>(null)
   const [near, setNear] = useState<Landmark | null>(null)
   const [sprint, setSprint] = useState(false)
-  const [sting, setSting] = useState(true)
   const [interior, setInterior] = useState<"street" | "cafe">("street")
   const [trailerOn, setTrailerOn] = useState(false)
   const [trailerUi, setTrailerUi] = useState(0)
   const [trailerKind, setTrailerKind] = useState<TrailerKind>("ramzor")
-  const { muted, setMuted } = useStreetAudio(!welcomeOpen && !phoneOpen && !trailerOn)
   const streetHold = useRef({ x: worldX, y: worldY, facing: 0 })
   const trailerRef = useRef(false)
   const trailerClock = useRef(0)
@@ -225,7 +201,6 @@ export function GtaWorld() {
   const ramzorHoldRef = useRef<Signal | null>(null)
   const ramzorFineT = useRef(0)
   const ramzors = useMemo(() => hayarkonRamzors(map), [map])
-  const e2e = process.env.NEXT_PUBLIC_E2E === "1"
   const keys = useRef(new Set<string>())
   const stick = useRef<Stick>({ x: 0, y: 0 })
   const pos = useRef({ x: worldX, y: worldY })
@@ -381,18 +356,6 @@ export function GtaWorld() {
     },
     [map, setInVehicle]
   )
-
-  useEffect(() => {
-    if (welcomeOpen) {
-      setSting(true)
-      return
-    }
-    const timer = window.setTimeout(() => {
-      setSting(false)
-      if (!e2e) startTrailer("ramzor")
-    }, 5200)
-    return () => window.clearTimeout(timer)
-  }, [e2e, startTrailer, welcomeOpen])
 
   const playMission = useCallback(
     (mission: Mission) => {
@@ -613,20 +576,18 @@ export function GtaWorld() {
             moveActor(map, actor, dt)
             actor.lineT -= dt
             if (actor.lineT <= 0) actor.line = null
-            if (actor.kind === "ped" && Math.random() < 0.002) {
-              actor.line = PED_LINES[Math.floor(Math.random() * PED_LINES.length)]
-              actor.lineT = 2.4
-            }
           }
           const hitR = actor.kind === "car" ? 18 : 16
-          if (bumpT.current <= 0 && dist(actor.x, actor.y, pos.current.x, pos.current.y) < hitR) {
-            bumpT.current = 0.7
+          if (
+            ride &&
+            bumpT.current <= 0 &&
+            dist(actor.x, actor.y, pos.current.x, pos.current.y) < hitR
+          ) {
+            bumpT.current = 1.4
             if (actor.kind !== "cop") {
-              const nextStars = Math.min(5, useGameStore.getState().wanted + (ride ? 2 : 1))
+              const nextStars = Math.min(5, useGameStore.getState().wanted + 1)
               useGameStore.getState().setWanted(nextStars)
               wantedT.current = 0
-              actor.line = actor.kind === "car" ? "תזהר!" : "אוי!"
-              actor.lineT = 1.6
             }
           }
         }
@@ -719,21 +680,20 @@ export function GtaWorld() {
   return (
     <div
       ref={frame}
-      className="relative min-h-0 flex-1 overflow-hidden bg-[#14081f]"
+      className="relative min-h-0 flex-1 overflow-hidden bg-[#c5d0dc]"
       data-testid="gta-world"
       tabIndex={0}
     >
       <div dir="ltr" className="absolute inset-0" data-testid="gta-canvas">
         <Canvas
-          shadows={process.env.NEXT_PUBLIC_E2E !== "1"}
-          dpr={[1, 1.5]}
-          camera={{ fov: 50, near: 0.1, far: 420, position: [40, 12, 48] }}
+          shadows={false}
+          dpr={[1, 1.2]}
+          camera={{ fov: 50, near: 0.1, far: 280, position: [40, 12, 48] }}
           gl={{ antialias: true, alpha: false, toneMapping: ACESFilmicToneMapping }}
           onCreated={({ gl }) => {
-            gl.shadowMap.enabled = process.env.NEXT_PUBLIC_E2E !== "1"
-            gl.shadowMap.type = PCFShadowMap
+            gl.shadowMap.enabled = false
             gl.toneMapping = ACESFilmicToneMapping
-            gl.toneMappingExposure = 1.12
+            gl.toneMappingExposure = 1
             gl.outputColorSpace = SRGBColorSpace
           }}
         >
@@ -774,7 +734,6 @@ export function GtaWorld() {
               : "ברגל"}
           {" · "}
           <span data-testid="gta-maggie">{UI.maggie.he}</span>
-          {spot.maggieLine ? ` · ${spot.maggieLine}` : ""}
         </p>
       </div>
 
@@ -784,7 +743,7 @@ export function GtaWorld() {
           data-testid="gta-phone"
           size="icon"
           onClick={() => setPhoneOpen((open) => !open)}
-          className="size-11 rounded-full shadow-lg"
+          className="size-10 rounded-full shadow-md"
           title={`${UI.phone.he} · P`}
         >
           <Smartphone />
@@ -792,23 +751,11 @@ export function GtaWorld() {
         </Button>
         <Button
           type="button"
-          data-testid="street-audio-toggle"
-          size="icon"
-          variant="secondary"
-          onClick={() => setMuted((value) => !value)}
-          className="size-11 rounded-full bg-black/50 text-white shadow-lg hover:bg-black/70"
-          title={muted ? UI.unmuteStreet.he : UI.muteStreet.he}
-        >
-          {muted ? <VolumeX /> : <Volume2 />}
-          <span className="sr-only">{muted ? UI.unmuteStreet.he : UI.muteStreet.he}</span>
-        </Button>
-        <Button
-          type="button"
           data-testid="parking-trailer-button"
           size="icon"
           variant="secondary"
           onClick={() => (trailerOn ? stopTrailer() : startTrailer())}
-          className="size-11 rounded-full bg-black/50 text-white shadow-lg hover:bg-black/70"
+          className="size-10 rounded-full bg-black/40 text-white/80 shadow-md hover:bg-black/60"
           title={UI.trailer.he}
         >
           <Film />
@@ -816,7 +763,6 @@ export function GtaWorld() {
         </Button>
       </div>
 
-      <DuskSting show={sting && !welcomeOpen && !phoneOpen && !active && !trailerOn} />
       {trailerOn ? <ParkingTrailer time={trailerUi} kind={trailerKind} onSkip={stopTrailer} /> : null}
 
       <Joystick
@@ -898,15 +844,17 @@ function Radar({
   const scale = size / (range * 2)
   return (
     <div className="absolute bottom-4 left-4 z-20" data-testid="gta-radar">
-      <div className="mb-1 flex justify-center gap-0.5">
-        {Array.from({ length: 5 }, (_, index) => (
-          <span key={index} className={cn("text-sm", index < wanted ? "text-yellow-300" : "text-white/20")}>
-            ★
-          </span>
-        ))}
-      </div>
+      {wanted > 0 ? (
+        <div className="mb-1 flex justify-center gap-0.5">
+          {Array.from({ length: 5 }, (_, index) => (
+            <span key={index} className={cn("text-sm", index < wanted ? "text-yellow-300" : "text-white/20")}>
+              ★
+            </span>
+          ))}
+        </div>
+      ) : null}
       <div
-        className="relative overflow-hidden rounded-full border-2 border-white/30 bg-[#1a0b24]/90 shadow-xl"
+        className="relative overflow-hidden rounded-full border border-white/25 bg-slate-800/80"
         style={{ width: size, height: size }}
       >
         {map.sea ? (
@@ -925,7 +873,7 @@ function Radar({
             key={landmark.id}
             className={cn(
               "absolute size-1.5 rounded-full",
-              landmark.missionId === nextId ? "size-2.5 animate-pulse bg-yellow-300" : "bg-white/80"
+              landmark.missionId === nextId ? "size-2.5 bg-yellow-300" : "bg-white/80"
             )}
             style={{
               left: (landmark.x - x + range) * scale,
